@@ -3,19 +3,24 @@
 <head>
   <meta charset="utf-8" />
   <title>RPG Overlay — Editor</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <h2>Админка оверлея</h2>
   <div>
     <h3>Герои</h3>
     <textarea id="heroesInput" rows="12" style="width:100%"></textarea>
-    <button id="saveHeroes">Сохранить heroes.json</button>
+    <button id="saveHeroes">Скачать heroes.json</button>
   </div>
   <div>
     <h3>Словарь</h3>
     <textarea id="glossaryInput" rows="12" style="width:100%"></textarea>
-    <button id="saveGlossary">Сохранить glossary.json</button>
+    <button id="saveGlossary">Скачать glossary.json</button>
+  </div>
+  <div>
+    <h3>Настройки</h3>
+    <textarea id="settingsInput" rows="6" style="width:100%"></textarea>
+    <button id="saveSettings">Скачать settings.json</button>
   </div>
   <script src="editor.js"></script>
 </body>
