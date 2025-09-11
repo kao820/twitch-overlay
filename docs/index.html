@@ -4,13 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>RPG Overlay — Viewer</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <!-- кнопка вызова -->
   <button id="overlayToggle" class="overlay-toggle">☰</button>
 
-  <!-- панель оверлея -->
+  <!-- панель -->
   <div id="overlayPanel" class="overlay-panel hidden">
     <div class="overlay-header">
       <button id="heroesTab" class="tab active">Герои</button>
@@ -28,9 +28,9 @@
         </div>
         <div class="hero-right">
           <div class="stat-row">
-            <span>❤</span><span id="statHP"></span>
-            <span>🛡</span><span id="statBRN"></span>
-            <span>⬆</span><span id="statURV"></span>
+            ❤ <span id="statHP"></span>
+            🛡 <span id="statBRN"></span>
+            ⬆ <span id="statURV"></span>
           </div>
           <div><b>Раса:</b> <span id="statRace"></span></div>
           <div><b>Класс:</b> <span id="statClass"></span></div>
@@ -60,6 +60,6 @@
     <div id="termDesc"></div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="data/script.js"></script>
 </body>
 </html>
