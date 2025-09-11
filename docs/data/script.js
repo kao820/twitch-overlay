@@ -1,5 +1,6 @@
-const heroesUrl = "heroes.json";
-const glossaryUrl = "glossary.json";
+const heroesUrl = "data/heroes.json";
+const glossaryUrl = "data/glossary.json";
+const settingsUrl = "data/settings.json";
 
 const overlayToggle = document.getElementById("overlayToggle");
 const overlayPanel = document.getElementById("overlayPanel");
@@ -22,11 +23,11 @@ const termTitle = document.getElementById("termTitle");
 const termDesc = document.getElementById("termDesc");
 const termClose = document.getElementById("termClose");
 
-// переключение панели
+// toggle overlay
 overlayToggle.onclick = () => overlayPanel.classList.toggle("hidden");
 overlayClose.onclick = () => overlayPanel.classList.add("hidden");
 
-// вкладки
+// tabs
 heroesTab.onclick = () => {
   heroesTab.classList.add("active");
   glossaryTab.classList.remove("active");
@@ -40,9 +41,18 @@ glossaryTab.onclick = () => {
   heroesSection.classList.add("hidden");
 };
 
-// загрузка героев
-fetch(heroesUrl).then(r => r.json()).then(data => {
-  data.forEach((h,i)=>{
+// load settings
+fetch(settingsUrl).then(r=>r.json()).then(st=>{
+  if(st.textColor) document.documentElement.style.setProperty("--text-color", st.textColor);
+  if(st.btnColor) document.documentElement.style.setProperty("--btn-color", st.btnColor);
+  if(st.panelBg) document.documentElement.style.setProperty("--panel-bg", st.panelBg);
+  if(st.width) document.documentElement.style.setProperty("--panel-width", st.width+"px");
+  if(st.height) document.documentElement.style.setProperty("--panel-height", st.height+"px");
+});
+
+// load heroes
+fetch(heroesUrl).then(r=>r.json()).then(data=>{
+  data.forEach(h=>{
     const btn = document.createElement("button");
     btn.textContent = h.name;
     btn.onclick = ()=> showHero(h);
@@ -66,17 +76,16 @@ function showHero(h){
   document.getElementById("aCHA").textContent = h.stats.ХАР;
 }
 
-// словарь
-fetch(glossaryUrl).then(r => r.json()).then(data => {
-  const letters = Object.keys(data);
-  letters.forEach(l=>{
+// load glossary
+fetch(glossaryUrl).then(r=>r.json()).then(data=>{
+  Object.keys(data).forEach(l=>{
     const btn = document.createElement("button");
     btn.textContent = l;
-    btn.onclick = ()=> showTerms(l,data[l]);
+    btn.onclick = ()=> showTerms(data[l]);
     alphabet.appendChild(btn);
   });
 });
-function showTerms(letter, arr){
+function showTerms(arr){
   termsList.innerHTML="";
   arr.forEach(item=>{
     const div = document.createElement("div");
