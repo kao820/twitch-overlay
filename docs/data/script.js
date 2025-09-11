@@ -23,6 +23,8 @@ const termTitle = document.getElementById("termTitle");
 const termDesc = document.getElementById("termDesc");
 const termClose = document.getElementById("termClose");
 
+let glossaryData = {};
+
 // toggle overlay
 overlayToggle.onclick = () => overlayPanel.classList.toggle("hidden");
 overlayClose.onclick = () => overlayPanel.classList.add("hidden");
@@ -59,6 +61,7 @@ fetch(heroesUrl).then(r=>r.json()).then(data=>{
     heroesList.appendChild(btn);
   });
 });
+
 function showHero(h){
   heroCard.innerHTML = `
     <div class="hero-left">
@@ -82,8 +85,10 @@ function showHero(h){
     </div>`;
   heroCard.classList.remove("hidden");
 }
+
 // load glossary
 fetch(glossaryUrl).then(r=>r.json()).then(data=>{
+  glossaryData = data;
   Object.keys(data).forEach(l=>{
     const btn = document.createElement("button");
     btn.textContent = l;
@@ -91,6 +96,25 @@ fetch(glossaryUrl).then(r=>r.json()).then(data=>{
     alphabet.appendChild(btn);
   });
 });
+
+function showTerms(arr){
+  termsList.innerHTML="";
+  arr.forEach(item=>{
+    const div = document.createElement("div");
+    div.textContent = item.term;
+    div.onclick = ()=> openTerm(item);
+    termsList.appendChild(div);
+  });
+}
+
+function openTerm(item){
+  termTitle.textContent = item.term;
+  termDesc.textContent = item.desc;
+  termModal.classList.remove("hidden");
+}
+termClose.onclick = ()=> termModal.classList.add("hidden");
+
+// поиск
 const searchInput = document.getElementById("searchInput");
 searchInput.addEventListener("input", ()=>{
   const q = searchInput.value.toLowerCase();
@@ -104,18 +128,3 @@ searchInput.addEventListener("input", ()=>{
   });
   showTerms(results);
 });
-function showTerms(arr){
-  termsList.innerHTML="";
-  arr.forEach(item=>{
-    const div = document.createElement("div");
-    div.textContent = item.term;
-    div.onclick = ()=> openTerm(item);
-    termsList.appendChild(div);
-  });
-}
-function openTerm(item){
-  termTitle.textContent = item.term;
-  termDesc.textContent = item.desc;
-  termModal.classList.remove("hidden");
-}
-termClose.onclick = ()=> termModal.classList.add("hidden");
