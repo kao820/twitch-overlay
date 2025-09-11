@@ -9,11 +9,10 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  color: var(--text-color);
   background: transparent;
+  color: var(--text-color);
 }
 
-/* кнопка */
 .overlay-toggle {
   position: fixed;
   bottom: 20px;
@@ -28,7 +27,6 @@ body {
   cursor: pointer;
 }
 
-/* панель */
 .overlay-panel {
   position: fixed;
   bottom: 80px;
@@ -51,12 +49,12 @@ body {
 }
 
 .tab {
-  background: transparent;
   border: 1px solid var(--text-color);
+  background: transparent;
   color: var(--text-color);
   padding: 4px 8px;
-  margin-right: 6px;
   border-radius: 4px;
+  margin-right: 6px;
   cursor: pointer;
 }
 .tab.active {
@@ -79,7 +77,6 @@ body {
 
 /* герои */
 .heroes-list button {
-  display: block;
   width: 100%;
   margin-bottom: 4px;
   background: #111;
