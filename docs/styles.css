@@ -97,7 +97,7 @@ body {
   background: #333 center/cover no-repeat;
   border-radius: 8px;
 }
-.hero-name { font-weight: bold; margin-top: 6px; }
+.hero-name {font-weight: bold; margin-bottom: 6px;text-align: center;}
 .stat-row { display: flex; gap: 6px; margin: 6px 0; }
 .attrs { display: grid; grid-template-columns: repeat(2,1fr); gap: 4px; }
 
