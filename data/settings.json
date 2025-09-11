@@ -1,1 +1,14 @@
-// Настройки внешнего вида
+{
+  "background": "https://example.com/background.jpg",
+  "accentColor": "#FFA500",
+  "panelColor": "#111111",
+  "textColor": "#ffffff",
+  "font": "Georgia, serif",
+  "buttonsPosition": "left",
+  "portraitScale": 1,
+  "portraitRadius": 12,
+  "cardPadding": 10,
+  "borderWidth": 2,
+  "borderColor": "#FFA500",
+  "opacity": 0.9
+}
