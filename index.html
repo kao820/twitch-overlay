@@ -1,1 +1,30 @@
-// Веб-интерфейс для зрителя
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overlay для трансляции</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="overlay">
+    <button id="menu-button">?</button>
+
+    <div id="panel" class="panel hidden">
+      <div class="tabs">
+        <button id="tab-heroes-btn" class="tab-btn active">Герои</button>
+        <button id="tab-glossary-btn" class="tab-btn">Словарь</button>
+      </div>
+
+      <div id="heroes-panel" class="content-section"></div>
+      <div id="glossary-panel" class="content-section hidden">
+        <input id="search-box" type="text" placeholder="Поиск...">
+        <div id="alphabet"></div>
+        <div id="glossary-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="viewer.js"></script>
+</body>
+</html>
