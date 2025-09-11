@@ -49,7 +49,7 @@
     "character": "Орелл",
     "race": "Человек",
     "class": "Бард",
-    "portrait": "https://github.com/kao820/twitch-overlay/blob/main/assets%20/Орелл.png",
+    "portrait": "assets /Орелл.png",
     "stats": {
       "СИЛ": 14,
       "ЛОВ": 10,
