@@ -1,34 +1,78 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Overlay для трансляции</title>
-  <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>RPG Overlay — Viewer</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="">
-    <button id="menu-button">?</button>
+  <!-- overlay container -->
+  <div id="overlay-root" aria-hidden="false">
+    <!-- floating activation button bottom-left -->
+    <button id="openOverlayBtn" class="activate-btn" title="Открыть оверлей">
+      <img src="" id="btnIcon" alt="" style="width:20px;height:20px;vertical-align:middle">
+    </button>
 
-    <div id="panel" class="panel hidden">
-      <div class="tabs">
-        <button id="tab-heroes-btn" class="tab-btn active">Герои</button>
-        <button id="tab-glossary-btn" class="tab-btn">Словарь</button>
+    <!-- panel (centered relative to activation area) -->
+    <div id="overlayPanel" class="panel hidden" role="dialog" aria-modal="true">
+      <div class="panel-top">
+        <div class="menu-buttons">
+          <button id="tabHeroes" class="tab active">Герои</button>
+          <button id="tabGloss" class="tab">Словарь</button>
+        </div>
+        <button id="closeOverlay" class="close-x">✕</button>
       </div>
 
-      <div id="heroes-panel" class="content-section">
-        <p class="loading-text">Загрузка героев...</p>
-      </div>
+      <div id="panelBody" class="panel-body">
+        <!-- HEROES -->
+        <div id="heroesSection" class="section">
+          <div id="heroesList" class="heroes-list"></div>
+          <div id="heroCard" class="hero-card hidden" aria-hidden="true">
+            <div class="hero-left">
+              <div id="heroPortrait" class="portrait"></div>
+              <div id="heroName" class="hero-name"></div>
+            </div>
+            <div class="hero-right">
+              <div class="hero-top-stats">
+                <div class="stat-pill"><span class="emoji">❤</span><span id="statHP">0</span></div>
+                <div class="stat-pill"><span class="emoji">🛡</span><span id="statBRN">0</span></div>
+                <div class="stat-pill"><span class="emoji">⬆</span><span id="statURV">0</span></div>
+              </div>
+              <div class="meta-row"><b>Раса:</b> <span id="statRace"></span></div>
+              <div class="meta-row"><b>Класс:</b> <span id="statClass"></span></div>
+              <div class="attributes">
+                <div class="attr"><b>СИЛ</b><span id="aSTR"></span></div>
+                <div class="attr"><b>ИНТ</b><span id="aINT"></span></div>
+                <div class="attr"><b>ЛОВ</b><span id="aDEX"></span></div>
+                <div class="attr"><b>МУД</b><span id="aWIS"></span></div>
+                <div class="attr"><b>ВЫН</b><span id="aCON"></span></div>
+                <div class="attr"><b>ХАР</b><span id="aCHA"></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-      <div id="glossary-panel" class="content-section hidden">
-        <input id="search-box" type="text" placeholder="Поиск...">
-        <div id="alphabet"></div>
-        <div id="glossary-list"></div>
+        <!-- GLOSSARY -->
+        <div id="glossSection" class="section hidden">
+          <div class="gloss-left">
+            <div id="alphabet" class="alphabet"></div>
+          </div>
+          <div class="gloss-right">
+            <div id="termsList" class="terms-list"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- ВАЖНО: defer, путь относительный -->
-  <script src="viewer.js" defer></script>
+  <!-- term modal (detailed description) -->
+  <div id="termModal" class="term-modal hidden" role="dialog" aria-modal="true">
+    <button id="termClose" class="close-x">✕</button>
+    <h3 id="termTitle"></h3>
+    <div id="termDesc"></div>
+  </div>
+
+<script src="script.js"></script>
 </body>
 </html>
