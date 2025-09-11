@@ -6,6 +6,7 @@ function download(name, text) {
   a.click();
 }
 
+// save
 document.getElementById("saveHeroes").onclick = ()=>{
   const val = document.getElementById("heroesInput").value;
   download("heroes.json", val);
@@ -14,11 +15,18 @@ document.getElementById("saveGlossary").onclick = ()=>{
   const val = document.getElementById("glossaryInput").value;
   download("glossary.json", val);
 };
+document.getElementById("saveSettings").onclick = ()=>{
+  const val = document.getElementById("settingsInput").value;
+  download("settings.json", val);
+};
 
-// подгрузка файлов
-fetch("heroes.json").then(r=>r.json()).then(d=>{
+// load existing
+fetch("data/heroes.json").then(r=>r.json()).then(d=>{
   document.getElementById("heroesInput").value = JSON.stringify(d,null,2);
 });
-fetch("glossary.json").then(r=>r.json()).then(d=>{
+fetch("data/glossary.json").then(r=>r.json()).then(d=>{
   document.getElementById("glossaryInput").value = JSON.stringify(d,null,2);
+});
+fetch("data/settings.json").then(r=>r.json()).then(d=>{
+  document.getElementById("settingsInput").value = JSON.stringify(d,null,2);
 });
