@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="overlay">
+  <div class="">
     <button id="menu-button">?</button>
 
     <div id="panel" class="panel hidden">
@@ -16,7 +16,10 @@
         <button id="tab-glossary-btn" class="tab-btn">Словарь</button>
       </div>
 
-      <div id="heroes-panel" class="content-section"></div>
+      <div id="heroes-panel" class="content-section">
+        <p class="loading-text">Загрузка героев...</p>
+      </div>
+
       <div id="glossary-panel" class="content-section hidden">
         <input id="search-box" type="text" placeholder="Поиск...">
         <div id="alphabet"></div>
@@ -25,6 +28,7 @@
     </div>
   </div>
 
+  <!-- ВАЖНО: defer, путь относительный -->
   <script src="viewer.js" defer></script>
 </body>
 </html>
