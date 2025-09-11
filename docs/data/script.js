@@ -91,6 +91,19 @@ fetch(glossaryUrl).then(r=>r.json()).then(data=>{
     alphabet.appendChild(btn);
   });
 });
+const searchInput = document.getElementById("searchInput");
+searchInput.addEventListener("input", ()=>{
+  const q = searchInput.value.toLowerCase();
+  const results = [];
+  Object.values(glossaryData).forEach(arr=>{
+    arr.forEach(item=>{
+      if(item.term.toLowerCase().includes(q)){
+        results.push(item);
+      }
+    });
+  });
+  showTerms(results);
+});
 function showTerms(arr){
   termsList.innerHTML="";
   arr.forEach(item=>{
