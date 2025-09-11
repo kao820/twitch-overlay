@@ -1,62 +1,42 @@
 [
   {
-    "player": "Кристина",
-    "character": "Фогги",
-    "race": "Полурослик",
-    "class": "Плут",
-    "portrait": "https://github.com/kao820/twitch-overlay/blob/main/assets%20/Фогги.png",
-    "stats": {
-      "СИЛ": 18,
-      "ЛОВ": 12,
-      "ВЫН": 16,
-      "ИНТ": 6,
-      "МДР": 10,
-      "ХАР": 8
-    }
-  },
-  {
-    "player": "Володя",
-    "character": "Оскар",
-    "race": "Дварф",
+    "name": "Каан",
+    "race": "Тарзика",
     "class": "Варвар",
-    "portrait": "https://github.com/kao820/twitch-overlay/blob/main/assets%20/Оскар.png",
-    "stats": {
-      "СИЛ": 8,
-      "ЛОВ": 14,
-      "ВЫН": 10,
-      "ИНТ": 16,
-      "МДР": 12,
-      "ХАР": 18
-    }
+    "portrait": "assets/portrait1.png",
+    "hp": 120,
+    "brn": 35,
+    "urv": 3,
+    "stats": {"СИЛ":18,"ИНТ":8,"ЛОВ":12,"МУД":7,"ВЫН":15,"ХАР":10}
   },
   {
-    "player": "Гриша",
-    "character": "Рэмбэл",
+    "name": "Аэль",
     "race": "Человек",
-    "class": "Жрец",
-    "portrait": "https://github.com/kao820/twitch-overlay/blob/main/assets%20/Рэмбэл.png",
-    "stats": {
-      "СИЛ": 8,
-      "ЛОВ": 14,
-      "ВЫН": 10,
-      "ИНТ": 16,
-      "МДР": 12,
-      "ХАР": 18
-    }
+    "class": "Учитель",
+    "portrait": "assets/portrait2.png",
+    "hp": 90,
+    "brn": 20,
+    "urv": 5,
+    "stats": {"СИЛ":10,"ИНТ":16,"ЛОВ":11,"МУД":14,"ВЫН":12,"ХАР":13}
   },
   {
-    "player": "Витя",
-    "character": "Орелл",
-    "race": "Человек",
-    "class": "Бард",
-    "portrait": "assets /Орелл.png",
-    "stats": {
-      "СИЛ": 14,
-      "ЛОВ": 10,
-      "ВЫН": 17,
-      "ИНТ": 9,
-      "МДР": 12,
-      "ХАР": 18
-    }
+    "name": "Тар",
+    "race": "Дракон",
+    "class": "Воин",
+    "portrait": "assets/portrait3.png",
+    "hp": 140,
+    "brn": 45,
+    "urv": 2,
+    "stats": {"СИЛ":20,"ИНТ":6,"ЛОВ":9,"МУД":6,"ВЫН":18,"ХАР":8}
+  },
+  {
+    "name": "Мира",
+    "race": "Эльф",
+    "class": "Разведчик",
+    "portrait": "assets/portrait4.png",
+    "hp": 85,
+    "brn": 18,
+    "urv": 6,
+    "stats": {"СИЛ":9,"ИНТ":13,"ЛОВ":18,"МУД":11,"ВЫН":10,"ХАР":14}
   }
 ]
