@@ -1,0 +1,19 @@
+{
+  "manifest_version": 1,
+  "version": "1.0.0",
+  "type": "overlay",
+  "name": "RPG Overlay",
+  "description": "Простейший оверлей для теста",
+  "author_name": "Твоё имя",
+  "author_url": "https://github.com/kao820",
+  "views": {
+    "overlay": {
+      "html": "index.html",
+      "js": "scripts.js",
+      "css": "styles.css",
+      "width": 1920,
+      "height": 1080
+    }
+  },
+  "permissions": []
+}
