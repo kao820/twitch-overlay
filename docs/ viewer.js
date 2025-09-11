@@ -17,7 +17,7 @@ menuBtn.addEventListener('click', () => {
 
 heroesBtn.addEventListener('click', () => switchTab('heroes'));
 glossaryBtn.addEventListener('click', () => switchTab('glossary'));
-searchBox.addEventListener('input', renderGlossaryList);
+searchBox.addEventListener('input', () => renderGlossaryList());
 
 function switchTab(tab) {
   if (tab === 'heroes') {
@@ -25,12 +25,13 @@ function switchTab(tab) {
     glossaryPanel.classList.add('hidden');
     heroesBtn.classList.add('active');
     glossaryBtn.classList.remove('active');
+    loadHeroes();
   } else {
     heroesPanel.classList.add('hidden');
     glossaryPanel.classList.remove('hidden');
     glossaryBtn.classList.add('active');
     heroesBtn.classList.remove('active');
-    renderGlossaryList();
+    loadGlossary();
   }
 }
 
@@ -42,12 +43,11 @@ function loadHeroes() {
       heroes.forEach(hero => {
         const card = document.createElement('div');
         card.className = 'card';
-        card.innerHTML = `
-          <h3>${hero.character} (${hero.race} ${hero.class})</h3>
-          <p>Участник: ${hero.player}</p>
+        card.innerHTML = <h3>${hero.character} (${hero.race} ${hero.class})</h3>
+          <p><strong>Участник:</strong> ${hero.player}</p>
           <img src="${hero.portrait}" alt="${hero.character}">
           <div class="stats">
-            ${Object.entries(hero.stats).map(([k,v]) => `<div class="stat">${kdiv>`).join('')}
+            ${Object.entries(hero.stats).map(([k,v]) => `<div class="stat">${k}: ${v}</div>`).join('')}
           </div>
         `;
         heroesPanel.appendChild(card);
@@ -85,7 +85,7 @@ function renderGlossaryList(filterLetter = null) {
   const letters = filterLetter ? [filterLetter] : Object.keys(glossaryData);
 
   letters.forEach(letter => {
-    glossaryletter].forEach(entry => {
+    glossaryData[letter].forEach(entry => {
       if (
         query === '' ||
         entry.term.toLowerCase().includes(query) ||
@@ -99,8 +99,3 @@ function renderGlossaryList(filterLetter = null) {
     });
   });
 }
-
-// Загрузить данные
-loadHeroes();
-loadGlossary();
-
