@@ -1,1 +1,98 @@
-// Админка
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>RPG Overlay — Editor</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  /* editor specific */
+  body{background:#0b0b0b;color:#ddd;padding:18px;font-family:var(--font)}
+  .editor-wrap{display:grid;grid-template-columns:1fr 420px;gap:12px}
+  .card{background:#111;padding:12px;border-radius:8px;border:1px solid #000}
+  .tabs{display:flex;gap:8px;margin-bottom:10px}
+  .tab-btn{padding:8px 10px;border-radius:6px;background:#0e0e0e;border:1px solid #222;color:#ddd;cursor:pointer}
+  .tab-btn.active{background:var(--btn-color);color:#000}
+  label{display:block;margin-top:8px;color:#bbb;font-size:13px}
+  input[type="text"], input[type="number"], textarea, select{width:100%;padding:8px;margin-top:6px;border-radius:6px;border:1px solid #222;background:#070707;color:#eee}
+  .heroes-editor{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .hero-block{background:#0a0a0a;padding:8px;border-radius:6px;border:1px solid #222}
+  .mini-preview{background:#050505;padding:8px;border-radius:6px;height:320px;overflow:auto}
+  .controls{display:flex;gap:8px;margin-top:10px}
+  .small{font-size:12px;color:#999;margin-top:8px}
+</style>
+</head>
+<body>
+<h2>RPG Overlay — Админка</h2>
+<div class="editor-wrap">
+  <div>
+    <div class="card">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="heroes">Герои</button>
+        <button class="tab-btn" data-tab="glossary">Словарь</button>
+        <button class="tab-btn" data-tab="design">Дизайн</button>
+      </div>
+
+      <div id="tab-heroes" class="tab-content">
+        <h3>Герои (макс 4)</h3>
+        <div class="heroes-editor" id="heroesEditor"></div>
+        <div class="controls">
+          <button id="saveHeroes">Сохранить (localStorage)</button>
+          <button id="downloadHeroes">Скачать heroes.json</button>
+          <button id="loadSampleHeroes">Загрузить sample из файла</button>
+        </div>
+        <div class="small">Путь к портрету — URL или путь в assets (например assets/portrait1.png)</div>
+      </div>
+
+      <div id="tab-glossary" class="tab-content" style="display:none">
+        <h3>Словарь</h3>
+        <label>Буква</label>
+        <select id="glossLetter"></select>
+        <div id="glossList" style="margin-top:8px;max-height:260px;overflow:auto"></div>
+        <label>Новый термин</label>
+        <input id="glossTerm" type="text" placeholder="Термин">
+        <label>Описание</label>
+        <textarea id="glossDesc" rows="3"></textarea>
+        <div class="controls">
+          <button id="addGloss">Добавить</button>
+          <button id="saveGloss">Сохранить (localStorage)</button>
+          <button id="downloadGloss">Скачать glossary.json</button>
+        </div>
+      </div>
+
+      <div id="tab-design" class="tab-content" style="display:none">
+        <h3>Дизайн</h3>
+        <label>Цвет кнопки</label><input id="d_btnColor" type="text" placeholder="#ff6a35">
+        <label>Фон панели (CSS, rgba или hex)</label><input id="d_panelBg" type="text" placeholder="rgba(6,5,1,0.95)">
+        <label>Цвет текста</label><input id="d_textColor" type="text" placeholder="#ff6a35">
+        <label>Ширина оверлея (px)</label><input id="d_width" type="number" value="450">
+        <label>Высота оверлея (px)</label><input id="d_height" type="number" value="500">
+        <div class="controls">
+          <button id="saveStyle">Сохранить стиль</button>
+          <button id="downloadStyle">Скачать style.json</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <h3>Быстрый предпросмотр</h3>
+      <div class="mini-preview" id="miniPreview"></div>
+      <div class="small">Предпросмотр обновляется автоматически при изменениях. Чтобы применить в оверлее (OBS), нажмите «Сохранить (localStorage)».</div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h4>Утилиты</h4>
+      <div class="controls" style="margin-top:6px">
+        <button id="clearLocal">Очистить localStorage</button>
+        <button id="reloadViewer">Открыть Viewer (index.html)</button>
+      </div>
+      <div class="small">Очистит ключи rpg_overlay_data / rpg_overlay_glossary / rpg_overlay_style</div>
+    </div>
+  </div>
+</div>
+
+<script src="editor.js"></script>
+</body>
+</html>
