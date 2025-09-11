@@ -1,10 +1,10 @@
 [
   {
-    "player": "Алексей",
-    "character": "Торак",
-    "race": "Орк",
-    "class": "Воин",
-    "portrait": "https://i.imgur.com/Yz68SLf.png",
+    "player": "Кристина",
+    "character": "Фогги",
+    "race": "Полурослик",
+    "class": "Плут",
+    "portrait": "https://github.com/kao820/twitch-overlay/blob/main/assets%20/Фогги.png",
     "stats": {
       "СИЛ": 18,
       "ЛОВ": 12,
@@ -15,11 +15,11 @@
     }
   },
   {
-    "player": "Мария",
-    "character": "Элиара",
-    "race": "Тифлинг",
-    "class": "Чернокнижник",
-    "portrait": "https://i.imgur.com/yi7cKdw.png",
+    "player": "Володя",
+    "character": "Оскар",
+    "race": "Дварф",
+    "class": "Варвар",
+    "portrait": "https://github.com/kao820/twitch-overlay/blob/main/assets%20/Оскар.png",
     "stats": {
       "СИЛ": 8,
       "ЛОВ": 14,
@@ -30,11 +30,26 @@
     }
   },
   {
-    "player": "Олег",
-    "character": "Гримм",
-    "race": "Дварф",
+    "player": "Гриша",
+    "character": "Рэмбэл",
+    "race": "Человек",
     "class": "Жрец",
-    "portrait": "https://i.imgur.com/X2dJiqp.png",
+    "portrait": "https://github.com/kao820/twitch-overlay/blob/main/assets%20/Рэмбэл.png",
+    "stats": {
+      "СИЛ": 8,
+      "ЛОВ": 14,
+      "ВЫН": 10,
+      "ИНТ": 16,
+      "МДР": 12,
+      "ХАР": 18
+    }
+  },
+  {
+    "player": "Витя",
+    "character": "Орелл",
+    "race": "Человек",
+    "class": "Бард",
+    "portrait": "https://github.com/kao820/twitch-overlay/blob/main/assets%20/Орелл.png",
     "stats": {
       "СИЛ": 14,
       "ЛОВ": 10,
