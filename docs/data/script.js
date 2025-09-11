@@ -60,22 +60,28 @@ fetch(heroesUrl).then(r=>r.json()).then(data=>{
   });
 });
 function showHero(h){
+  heroCard.innerHTML = `
+    <div class="hero-left">
+      <div class="hero-name">${h.name}</div>
+      <div class="portrait" style="background-image:url(${h.portrait})"></div>
+    </div>
+    <div class="hero-right">
+      <div class="stat-row">
+        ❤ ${h.hp} 🛡 ${h.brn} ⬆ ${h.urv}
+      </div>
+      <div><b>Раса:</b> ${h.race}</div>
+      <div><b>Класс:</b> ${h.class}</div>
+      <div class="attrs">
+        <div>СИЛ: ${h.stats.СИЛ}</div>
+        <div>ЛОВ: ${h.stats.ЛОВ}</div>
+        <div>ВЫН: ${h.stats.ВЫН}</div>
+        <div>ИНТ: ${h.stats.ИНТ}</div>
+        <div>МУД: ${h.stats.МУД}</div>
+        <div>ХАР: ${h.stats.ХАР}</div>
+      </div>
+    </div>`;
   heroCard.classList.remove("hidden");
-  document.getElementById("heroPortrait").style.backgroundImage = `url(${h.portrait})`;
-  document.getElementById("heroName").textContent = h.name;
-  document.getElementById("statHP").textContent = h.hp;
-  document.getElementById("statBRN").textContent = h.brn;
-  document.getElementById("statURV").textContent = h.urv;
-  document.getElementById("statRace").textContent = h.race;
-  document.getElementById("statClass").textContent = h.class;
-  document.getElementById("aSTR").textContent = h.stats.СИЛ;
-  document.getElementById("aDEX").textContent = h.stats.ЛОВ;
-  document.getElementById("aCON").textContent = h.stats.ВЫН;
-  document.getElementById("aINT").textContent = h.stats.ИНТ;
-  document.getElementById("aWIS").textContent = h.stats.МУД;
-  document.getElementById("aCHA").textContent = h.stats.ХАР;
 }
-
 // load glossary
 fetch(glossaryUrl).then(r=>r.json()).then(data=>{
   Object.keys(data).forEach(l=>{
