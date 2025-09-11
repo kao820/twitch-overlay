@@ -39,6 +39,35 @@
     <div id="termDesc"></div>
   </div>
 
+  <!-- твой скрипт -->
   <script src="data/script.js"></script>
+
+  <!-- Twitch SDK для интерактивности -->
+  <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
+  <script>
+    window.Twitch.ext.onAuthorized(function(auth) {
+      console.log("Twitch Extension авторизация успешна:", auth);
+
+      // Функция для отправки кликов на сервер или в лог
+      function sendClick(action) {
+        console.log(`Пользователь ${auth.userId} нажал:`, action);
+        // Пример отправки на сервер:
+        // fetch('/api/click', { method: 'POST', body: JSON.stringify({ user: auth.userId, action }) })
+      }
+
+      // Кнопки панели
+      const overlayToggle = document.getElementById("overlayToggle");
+      const overlayClose = document.getElementById("overlayClose");
+      const heroesTab = document.getElementById("heroesTab");
+      const glossaryTab = document.getElementById("glossaryTab");
+      const termClose = document.getElementById("termClose");
+
+      overlayToggle.addEventListener("click", () => sendClick("overlayToggle"));
+      overlayClose.addEventListener("click", () => sendClick("overlayClose"));
+      heroesTab.addEventListener("click", () => sendClick("heroesTab"));
+      glossaryTab.addEventListener("click", () => sendClick("glossaryTab"));
+      termClose.addEventListener("click", () => sendClick("termClose"));
+    });
+  </script>
 </body>
 </html>
