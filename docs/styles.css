@@ -1,33 +1,198 @@
-/* Общие стили */
+:root {
+  --panel-bg: rgba(6, 5, 1, 0.95);
+  --text-color: #ff6a35;
+  --btn-color: #ff6a35;
+  --scale-factor: 1.1; /* оставил то, что ты просила */
+}
+
+/* Базовые размеры */
+html { font-size: calc(16px * var(--scale-factor)); }
+
 body {
-  font-family: Arial, sans-serif;
   margin: 0;
-  padding: 0;
-  font-size: 0.875em; /* уменьшение текста примерно на 0.25 */
-  transform: scale(1.25); /* масштаб */
-  transform-origin: top center;
+  font-family: Arial, sans-serif;
+  color: var(--text-color);
+  background-color: black;
+  background-size: cover;
+  background-position: center;
 }
 
-/* Контейнер персонажа */
-.character-details {
+/* Панель / header / табы */
+.overlay-panel { padding: 12px; }
+.overlay-header { display: flex; gap: 10px; margin-bottom: 10px; }
+
+.tab {
+  border: 1px solid var(--text-color);
+  background: transparent;
+  color: var(--text-color);
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.tab.active { background: var(--text-color); color: black; }
+
+.section { padding: 10px; }
+
+/* Список героев */
+.heroes-list button {
+  display: block;
+  width: 100%;
+  margin-bottom: 6px;
+  background: #111;
+  color: var(--text-color);
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 6px;
+  font-size: 1rem;
+}
+
+/* Карточка героя */
+.hero-card {
   display: flex;
-  align-items: flex-start; /* картинка и текст выравниваются сверху */
-  gap: 12px; /* расстояние между фото и характеристиками */
-  margin-top: 10px;
+  gap: 12px;
+  margin-top: 15px;
+  border: 1px solid #333;
+  padding: 10px;
+  border-radius: 4px;
+  background-color: #1a1a1a;
+  width: auto;
+  max-width: 100%;
+  box-sizing: border-box;
+  align-items: flex-start;
 }
 
-/* Портрет */
-.character-details img {
-  width: 100px; /* фиксированная ширина */
-  height: auto;
-  object-fit: contain;
-  flex-shrink: 0; /* чтобы картинка не сжималась */
+/* ---------- ПОРТРЕТЫ ---------- */
+.portrait {
+  width: 200px;
+  height: 400px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 6px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  aspect-ratio: 1 / 2;
+  overflow: hidden;
 }
 
-/* Блок с текстом */
-.character-info {
-  flex: 1;
+img.portrait {
+  width: 200px;
+  height: 400px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+  display: block;
+}
+
+/* attributes блок (характеристики) */
+.attrs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  font-size: 1rem;
+  color: var(--text-color);
+}
+
+/* Модальное окно */
+.modal {
+  position: fixed;
+  z-index: 999;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--panel-bg);
+  padding: 18px;
+  color: var(--text-color);
+  border-radius: 8px;
+  width: min(92vw, 420px);
+  max-height: 90vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.modal.hidden { display: none; }
+
+.close-btn {
+  float: right;
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-size: 1.2rem;
+  color: var(--text-color);
+}
+
+/* поля ввода / поиск */
+input {
+  width: 100%;
+  margin-bottom: 8px;
+  background: #111;
+  border: 1px solid #333;
+  padding: 6px;
+  color: var(--text-color);
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+/* алфавит */
+.alphabet {
   display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0;
+}
+.alphabet button {
+  padding: 6px 8px;
+  background: #222;
+  color: var(--text-color);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-size: 0.95rem;
+}
+
+/* список терминов */
+.terms-list div {
+  padding: 8px;
+  border-bottom: 1px solid #333;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+/* утилитарные */
+.hidden { display: none; }
+
+/* ----------------- Адаптивные правила (мобильные) ----------------- */
+@media (max-width: 700px) {
+  .hero-card {
+    flex-direction: row;     /* оставляем в строку */
+    align-items: flex-start; /* фото слева, текст справа */
+  }
+
+  .portrait,
+  img.portrait {
+    width: 100px;
+    height: auto;
+    max-width: 30%;
+    aspect-ratio: 1 / 2;
+    flex-shrink: 0;
+    border-radius: 6px;
+  }
+
+  .attrs {
+    grid-template-columns: repeat(2, 1fr);
+    font-size: 0.9rem;
+  }
+
+  .modal {
+    width: 94vw;
+    max-width: 94vw;
+    padding: 14px;
+  }
+
+  .alphabet button {
+    padding: 8px 10px;
+    font-size: 1rem;
+  }
 }
