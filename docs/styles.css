@@ -2,10 +2,10 @@
   --panel-bg: rgba(6, 5, 1, 0.95);
   --text-color: #ff6a35;
   --btn-color: #ff6a35;
-  --scale-factor: 1.1; /* оставил то, что ты просила */
+  --scale-factor: 1.1;
 }
 
-/* Базовые размеры (используются rem/em не менял, просто масштаб) */
+/* Базовые размеры */
 html { font-size: calc(16px * var(--scale-factor)); }
 
 body {
@@ -59,31 +59,26 @@ body {
   width: auto;
   max-width: 100%;
   box-sizing: border-box;
-  align-items: flex-start;
+  align-items: stretch; /* растягиваем портрет по высоте карточки */
 }
 
-/* ---------- ПОРТРЕТЫ (поддержка и div с background-image, и img) ---------- */
-/* Дефолт: 100px x 200px (ты просила уменьшить на 100/200 от 200x400) */
+/* ---------- ПОРТРЕТЫ ---------- */
 .portrait {
-  /* если это div с background-image */
-  width: 200px;
-  height: 400px;
+  width: 200px;       /* фиксированная ширина */
+  height: 100%;       /* растягиваем по высоте родителя */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   border-radius: 6px;
-  flex-shrink: 0;      /* не даём ужимать по оси flex (на больших экранах) */
+  flex-shrink: 0;
   box-sizing: border-box;
-  /* современный способ задать пропорцию — на случай, если высота сбросится */
-  aspect-ratio: 1 / 2;
   overflow: hidden;
 }
 
-/* если у тебя используются <img class="portrait"> — поддержим и его */
 img.portrait {
   width: 200px;
-  height: 400px;
-  object-fit: cover;
+  height: 100%;       /* растягиваем по высоте родителя */
+  object-fit: cover;  /* картинка полностью заполняет область */
   border-radius: 6px;
   flex-shrink: 0;
   display: block;
@@ -98,7 +93,7 @@ img.portrait {
   color: var(--text-color);
 }
 
-/* Модальное окно словаря — адаптивное, прокручиваемое */
+/* Модальное окно */
 .modal {
   position: fixed;
   z-index: 999;
@@ -115,7 +110,6 @@ img.portrait {
   box-sizing: border-box;
 }
 
-/* скрытый модал */
 .modal.hidden { display: none; }
 
 .close-btn {
@@ -127,7 +121,7 @@ img.portrait {
   color: var(--text-color);
 }
 
-/* поля ввода / поиск */
+/* Поля ввода */
 input {
   width: 100%;
   margin-bottom: 8px;
@@ -139,7 +133,7 @@ input {
   box-sizing: border-box;
 }
 
-/* алфавит */
+/* Алфавит */
 .alphabet {
   display: flex;
   flex-wrap: wrap;
@@ -153,11 +147,11 @@ input {
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  flex: 0 0 auto; /* не растягиваем */
+  flex: 0 0 auto;
   font-size: 0.95rem;
 }
 
-/* список терминов */
+/* Список терминов */
 .terms-list div {
   padding: 8px;
   border-bottom: 1px solid #333;
@@ -165,25 +159,21 @@ input {
   box-sizing: border-box;
 }
 
-/* утилитарные */
+/* Утилитарные */
 .hidden { display: none; }
 
-/* ----------------- Адаптивные правила (мобильные) ----------------- */
+/* ----------------- Адаптивные правила ----------------- */
 @media (max-width: 700px) {
   .hero-card {
-    flex-direction: column;
-    align-items: center;
+    flex-direction: row; /* оставляем горизонтально */
+    align-items: stretch; /* портрет растягивается по высоте */
   }
 
-  /* на мобилке портрет подстраивается по ширине контейнера,
-     но сохраняет aspect-ratio чтобы не «схлопнуться» */
   .portrait,
   img.portrait {
-    width: 80%;
-    height: auto;          /* пусть браузер вычислит высоту по aspect-ratio */
-    max-width: 240px;      /* не даём слишком огромный */
-    min-height: 120px;     /* чтобы совсем не схлопнулся */
-    aspect-ratio: 1 / 2;
+    width: 100px;   /* можно оставить фиксированную ширину или адаптировать */
+    height: 100%;   /* растягиваем по высоте карточки */
+    object-fit: cover;
     flex-shrink: 0;
   }
 
