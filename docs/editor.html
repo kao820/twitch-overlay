@@ -4,24 +4,34 @@
   <meta charset="utf-8" />
   <title>RPG Overlay — Editor</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    h2,h3 { margin-top: 1em; }
+    .heroes-columns { display: flex; gap: 20px; margin-bottom: 20px; }
+    .hero-card { border: 1px solid #ccc; padding: 10px; width: 200px; }
+    .hero-card input { width: 100%; margin-bottom: 4px; }
+    .glossary-row { display: flex; gap: 10px; margin-bottom: 4px; }
+    .glossary-row input { flex: 1; }
+  </style>
 </head>
 <body>
   <h2>Админка оверлея</h2>
+
   <div>
     <h3>Герои</h3>
-    <textarea id="heroesInput" rows="12" style="width:100%"></textarea>
-    <button id="saveHeroes">Скачать heroes.json</button>
+    <div id="heroesContainer" class="heroes-columns"></div>
+    <button id="addHero">Добавить героя</button>
+    <button id="downloadHeroes">Скачать data.json</button>
   </div>
+
   <div>
     <h3>Словарь</h3>
-    <textarea id="glossaryInput" rows="12" style="width:100%"></textarea>
-    <button id="saveGlossary">Скачать glossary.json</button>
+    <label>Буква: <input id="glossaryLetter" maxlength="1" style="width:30px"></label>
+    <div id="glossaryContainer"></div>
+    <button id="addTerm">Добавить термин</button>
+    <button id="downloadGlossary">Скачать data.json</button>
   </div>
-  <div>
-    <h3>Настройки</h3>
-    <textarea id="settingsInput" rows="6" style="width:100%"></textarea>
-    <button id="saveSettings">Скачать settings.json</button>
-  </div>
+
   <script src="editor.js"></script>
 </body>
 </html>
