@@ -1,130 +1,115 @@
-const heroesUrl = "data/heroes.json";
-const glossaryUrl = "data/glossary.json";
-const settingsUrl = "data/settings.json";
+// DOMенты
+const heroesTab = document.getElementById('heroesTab');
+const glossaryTab = document.getElementById('glossaryTab');
+const heroesSection = document.getElementById('heroesSection');
+const glossarySection = document.getElementById('glossarySection');
 
-const overlayToggle = document.getElementById("overlayToggle");
-const overlayPanel = document.getElementById("overlayPanel");
-const overlayClose = document.getElementById("overlayClose");
+const heroesList = document.getElementById('heroesList');
+const heroCard = document.getElementById('heroCard');
 
-const heroesTab = document.getElementById("heroesTab");
-const glossaryTab = document.getElementById("glossaryTab");
+const alphabet = document.getElementById('alphabet');
+const termsList = document.getElementById('termsList');
+const searchInput = document.getElementById('searchInput');
 
-const heroesSection = document.getElementById("heroesSection");
-const glossarySection = document.getElementById("glossarySection");
-
-const heroesList = document.getElementById("heroesList");
-const heroCard = document.getElementById("heroCard");
-
-const alphabet = document.getElementById("alphabet");
-const termsList = document.getElementById("termsList");
-
-const termModal = document.getElementById("termModal");
-const termTitle = document.getElementById("termTitle");
-const termDesc = document.getElementById("termDesc");
-const termClose = document.getElementById("termClose");
+const termModal = document.getElementById('termModal');
+const termTitle = document.getElementById('termTitle');
+const termDesc = document.getElementById('termDesc');
+const termClose = document.getElementById('termClose');
 
 let glossaryData = {};
 
-// toggle overlay
-overlayToggle.onclick = () => overlayPanel.classList.toggle("hidden");
-overlayClose.onclick = () => overlayPanel.classList.add("hidden");
+// Переключение вкладок
+heroesTab.onclick = () => setTab('heroes');
+glossaryTab.onclick = () => setTab('glossary');
+termClose.onclick = () => termModal.classList.add("hidden");
 
-// tabs
-heroesTab.onclick = () => {
-  heroesTab.classList.add("active");
-  glossaryTab.classList.remove("active");
-  heroesSection.classList.remove("hidden");
-  glossarySection.classList.add("hidden");
-};
-glossaryTab.onclick = () => {
-  glossaryTab.classList.add("active");
-  heroesTab.classList.remove("active");
-  glossarySection.classList.remove("hidden");
-  heroesSection.classList.add("hidden");
-};
+function setTab(tab) {
+  const isHeroes = tab === 'heroes';
+  heroesSection.classList.toggle('hidden', !isHeroes);
+  glossarySection.classList.toggle('hidden', isHeroes);
+  heroesTab.classList.toggle('active', isHeroes);
+  glossaryTab.classList.toggle('active', !isHeroes);
+}
 
-// load settings
-fetch(settingsUrl).then(r=>r.json()).then(st=>{
-  if(st.textColor) document.documentElement.style.setProperty("--text-color", st.textColor);
-  if(st.btnColor) document.documentElement.style.setProperty("--btn-color", st.btnColor);
-  if(st.panelBg) document.documentElement.style.setProperty("--panel-bg", st.panelBg);
-  if(st.width) document.documentElement.style.setProperty("--panel-width", st.width+"px");
-  if(st.height) document.documentElement.style.setProperty("--panel-height", st.height+"px");
-});
-
-// load heroes
-fetch(heroesUrl).then(r=>r.json()).then(data=>{
-  data.forEach(h=>{
-    const btn = document.createElement("button");
-    btn.textContent = h.name;
-    btn.onclick = ()=> showHero(h);
-    heroesList.appendChild(btn);
+// Загрузка героев
+fetch('data/heroes.json')
+  .then(res => res.json())
+  .then(data => {
+    data.forEach(hero => {
+      const btn = document.createElement('button');
+      btn.textContent = hero.name;
+      btn.onclick = () => showHero(hero);
+      heroesList.appendChild(btn);
+    });
   });
-});
 
-function showHero(h){
+function showHero(hero) {
   heroCard.innerHTML = `
-    <div class="hero-left">
-      <div class="hero-name">${h.name}</div>
-      <div class="portrait" style="background-image:url(${h.portrait})"></div>
+   -left">
+      <div class="hero-name">${hero.name}</div>
+      <div class="portrait" style="background-image: url('${hero.portrait}')"></div>
     </div>
     <div class="hero-right">
-      <div class="stat-row">
-        ❤ ${h.hp} 🛡 ${h.brn} ⬆ ${h.urv}
-      </div>
-      <div><b>Раса:</b> ${h.race}</div>
-      <div><b>Класс:</b> ${h.class}</div>
+      <div class="stat-row">❤ ${hero.hp} 🛡 ${hero.brn} ⬆ ${hero.urv}</div>
+      <div><b>Раса:</b> ${hero.race}</div>
+      <div><b>Класс:</b> ${hero.class}</div>
       <div class="attrs">
-        <div>СИЛ: ${h.stats.СИЛ}</div>
-        <div>ЛОВ: ${h.stats.ЛОВ}</div>
-        <div>ВЫН: ${h.stats.ВЫН}</div>
-        <div>ИНТ: ${h.stats.ИНТ}</div>
-        <div>МУД: ${h.stats.МУД}</div>
-        <div>ХАР: ${h.stats.ХАР}</div>
+        <div>СИЛ: ${hero.stats.СИЛ}</div>
+        <div>ЛОВ: ${hero.stats.ЛОВ}</div>
+        <div>ВЫН: ${hero.stats.ВЫН}</div>
+        <div>ИНТ: ${hero.stats.ИНТ}</div>
+        <div>МУД: ${hero.stats.МУД}</div>
+        <div>ХАР: ${hero.stats.ХАР}</div>
       </div>
-    </div>`;
-  heroCard.classList.remove("hidden");
+    </div>
+  `;
+  heroCard.classList.remove('hidden');
 }
 
-// load glossary
-fetch(glossaryUrl).then(r=>r.json()).then(data=>{
-  glossaryData = data;
-  Object.keys(data).forEach(l=>{
-    const btn = document.createElement("button");
-    btn.textContent = l;
-    btn.onclick = ()=> showTerms(data[l]);
+// Загрузка глоссария
+fetch('data/glossary.json')
+  .then(res => res.json())
+  .then(data => {
+    glossaryData = data;
+    renderAlphabet();
+    renderGlossaryList();
+  });
+
+function renderAlphabet() {
+  alphabet.innerHTML = '';
+  Object.keys(glossaryData).forEach(letter => {
+    const btn = document.createElement('button');
+    btn.textContent = letter;
+    btn.onclick = () => renderGlossaryList(letter);
     alphabet.appendChild(btn);
   });
-});
-
-function showTerms(arr){
-  termsList.innerHTML="";
-  arr.forEach(item=>{
-    const div = document.createElement("div");
-    div.textContent = item.term;
-    div.onclick = ()=> openTerm(item);
-    termsList.appendChild(div);
-  });
 }
 
-function openTerm(item){
-  termTitle.textContent = item.term;
-  termDesc.textContent = item.desc;
-  termModal.classList.remove("hidden");
-}
-termClose.onclick = ()=> termModal.classList.add("hidden");
+function renderGlossaryList(letterFilter) {
+  termsList.innerHTML = '';
+  const query = searchInput.value.toLowerCase();
+  const letters = letterFilter ? [letterFilter] : Object.keys(glossaryData);
 
-// поиск
-const searchInput = document.getElementById("searchInput");
-searchInput.addEventListener("input", ()=>{
-  const q = searchInput.value.toLowerCase();
-  const results = [];
-  Object.values(glossaryData).forEach(arr=>{
-    arr.forEach(item=>{
-      if(item.term.toLowerCase().includes(q)){
-        results.push(item);
+  letters.forEach(letter => {
+    glossaryData[letter].forEach(entry => {
+      if (
+        !query ||
+        entry.term.toLowerCase().includes(query) ||
+        entry.desc.toLowerCase().includes(query)
+      ) {
+        const div = document.createElement('div');
+        div.textContent = entry.term;
+        div.onclick = () => openTerm(entry);
+        termsList.appendChild(div);
       }
     });
   });
-  showTerms(results);
-});
+}
+
+function openTerm(entry) {
+  termTitle.textContent = entry.term;
+  termDesc.textContent = entry.desc;
+  termModal.classList.remove("hidden");
+}
+
+searchInput.addEventListener("input", () => renderGlossaryList());
