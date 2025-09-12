@@ -1,5 +1,5 @@
 {
-  "background": "https://example.com/background.jpg",
+  "background": "assets/Фон.png",
   "accentColor": "#FFA500",
   "panelColor": "#111111",
   "textColor": "#ffffff",
