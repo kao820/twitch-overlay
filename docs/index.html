@@ -18,7 +18,17 @@
 
     <div id="heroesSection" class="section">
       <div id="heroesList" class="heroes-list"></div>
-      <div id="heroCard" class="hero-card hidden"></div>
+
+      <!-- Карточка героя -->
+      <div id="heroCard" class="hero-card hidden">
+        <h2 class="hero-name">Имя Героя</h2>
+        <div class="portrait" style="background-image: url('assets/hero.jpg');"></div>
+        <div class="hero-stats">
+          <div class="stat heart">120</div>
+          <div class="stat shield">30</div>
+          <div class="stat arrow">5</div>
+        </div>
+      </div>
     </div>
 
     <div id="glossarySection" class="section hidden">
@@ -27,10 +37,11 @@
       <div id="termsList" class="terms-list"></div>
     </div>
 
-  <div id="termModal" class="modal hidden">
-    <button id="termClose" class="close-btn">✕</button>
-    <h3 id="termTitle"></h3>
-    <div id="termDesc"></div>
+    <div id="termModal" class="modal hidden">
+      <button id="termClose" class="close-btn">✕</button>
+      <h3 id="termTitle"></h3>
+      <div id="termDesc"></div>
+    </div>
   </div>
 
   <script src="viewer.js"></script>
