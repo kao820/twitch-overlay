@@ -53,38 +53,68 @@ body {
 
 .hero-card {
   display: flex;
-  gap: 12px;
+  flex-direction: column;
+  align-items: center;
   margin-top: 15px;
   border: 1px solid #333;
   padding: 10px;
   border-radius: 4px;
   background-color: #1a1a1a;
-
-  /* карточка подстраивается под контент */
   width: auto;
-  max-width: none;
+  max-width: 300px;
+}
+
+.hero-name {
+  font-size: 26px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-align: center;
+  color: var(--text-color);
 }
 
 .portrait {
-  /* желаемый размер */
   width: 200px;
   height: 400px;
   background-size: cover;
   background-position: center;
   border-radius: 6px;
-
-  /* чтобы текст не сжимал картинку */
-  flex-shrink: 0;
-
-  /* адаптивность */
-  max-width: 200px;
-  max-height: 400px;
+  margin-bottom: 12px;
 }
 
-.attrs {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
+.hero-stats {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.stat {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+/* Сердце */
+.stat.heart {
+  background: red;
+  clip-path: path("M24 42s-18-10.4-18-24A10.9 10.9 0 0 1 24 6a10.9 10.9 0 0 1 18 12c0 13.6-18 24-18 24z");
+}
+
+/* Щит */
+.stat.shield {
+  background: steelblue;
+  clip-path: path("M25 2L47 12V30C47 46 25 62 25 62S3 46 3 30V12L25 2Z");
+}
+
+/* Стрелка */
+.stat.arrow {
+  background: green;
+  clip-path: path("M24 4l12 20h-8v20h-8V24h-8z");
 }
 
 .modal {
@@ -150,8 +180,7 @@ input {
 /* адаптивность для узких экранов */
 @media (max-width: 600px) {
   .hero-card {
-    flex-direction: column;
-    align-items: center;
+    max-width: 90%;
   }
 
   .portrait {
