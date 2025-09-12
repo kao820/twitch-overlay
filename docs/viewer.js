@@ -123,4 +123,3 @@ function openTerm(t) {
   termDesc.textContent = t.desc;
   termModal.classList.remove("hidden");
 }
-});
