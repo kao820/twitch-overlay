@@ -43,6 +43,23 @@ function downloadJSON(name, obj){
   URL.revokeObjectURL(a.href);
 }
 
+// --- Сортировка глоссария ---
+function sortGlossaryArray(arr){
+  arr.sort((a,b)=>{
+    const termA = a.term.toUpperCase();
+    const termB = b.term.toUpperCase();
+    const len = Math.max(termA.length, termB.length);
+    for(let i=0;i<len;i++){
+      const chA = termA[i] || '';
+      const chB = termB[i] || '';
+      const idxA = letters.indexOf(chA);
+      const idxB = letters.indexOf(chB);
+      if(idxA!==idxB) return idxA-idxB;
+    }
+    return 0;
+  });
+}
+
 // --- Герои ---
 function renderHeroes(){
   charsContainer.innerHTML = '';
@@ -105,23 +122,8 @@ function populateGlossLetters(){
 
 function renderGloss(){
   const L = glossLetter.value || letters[0];
-  const list = (glossary[L] || []).slice(); // копия массива
-
-  // --- сортировка по русскому алфавиту ---
-  list.sort((a,b)=>{
-    const termA = a.term.toUpperCase();
-    const termB = b.term.toUpperCase();
-    const len = Math.max(termA.length, termB.length);
-    for(let i=0;i<len;i++){
-      const chA = termA[i] || '';
-      const chB = termB[i] || '';
-      const idxA = letters.indexOf(chA);
-      const idxB = letters.indexOf(chB);
-      if(idxA!==idxB) return idxA-idxB;
-    }
-    return 0;
-  });
-
+  const list = (glossary[L] || []).slice();
+  sortGlossaryArray(list);
   glossList.innerHTML = '';
   list.forEach((it, idx)=>{
     const div = document.createElement('div');
@@ -145,6 +147,7 @@ function attachGlossListeners(){
       const i = +b.dataset.i;
       const L = glossLetter.value;
       glossary[L].splice(i,1);
+      sortGlossaryArray(glossary[L]);
       renderGloss();
     };
   });
@@ -156,6 +159,7 @@ function attachGlossListeners(){
       const t = prompt('Термин', it.term); if(t===null) return;
       const d = prompt('Описание', it.desc); if(d===null) return;
       it.term = t; it.desc = d;
+      sortGlossaryArray(glossary[L]);
       renderGloss();
     };
   });
@@ -169,12 +173,18 @@ document.getElementById('addTerm').onclick = ()=>{
   const L = glossLetter.value;
   if(!glossary[L]) glossary[L] = [];
   glossary[L].push({term:t,desc:d});
-  document.getElementById('newTerm').value=''; document.getElementById('newDesc').value='';
+  sortGlossaryArray(glossary[L]);
+  document.getElementById('newTerm').value=''; 
+  document.getElementById('newDesc').value='';
   renderGloss();
 };
 
 downloadHeroesBtn.onclick = ()=> downloadJSON('heroes.json', heroes);
-downloadGlossBtn.onclick = ()=> downloadJSON('glossary.json', glossary);
+downloadGlossBtn.onclick = ()=>{
+  const L = glossLetter.value;
+  sortGlossaryArray(glossary[L]);
+  downloadJSON('glossary.json', glossary);
+};
 
 // --- Вкладки ---
 document.querySelectorAll('.tab').forEach(tab=>{
