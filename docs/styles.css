@@ -31,6 +31,7 @@ body {
   border-radius: 4px;
   cursor: pointer;
 }
+
 .tab.active {
   background: var(--text-color);
   color: black;
@@ -60,17 +61,9 @@ body {
   border-radius: 4px;
   background-color: #1a1a1a;
 
+  /* карточка подстраивается под контент */
   width: auto;
   max-width: none;
-  flex-direction: column; /* имя сверху, характеристики ниже */
-  align-items: center;
-}
-
-.hero-name {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 10px;
-  text-align: center;
 }
 
 .portrait {
@@ -79,27 +72,19 @@ body {
   background-size: cover;
   background-position: center;
   border-radius: 6px;
+
+  /* чтобы текст не сжимал картинку */
   flex-shrink: 0;
+
+  /* адаптивность */
   max-width: 200px;
   max-height: 400px;
-  margin-bottom: 10px;
 }
 
-/* Блок характеристик героя */
 .attrs {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 18px; /* фиксированный размер шрифта */
-}
-
-.attrs div {
-  line-height: 1.4;
-}
-
-/* жирность для ключевых слов */
-.attrs b {
-  font-weight: bold;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
 }
 
 .modal {
@@ -115,9 +100,11 @@ body {
   min-width: 300px;
   max-width: 80%;
 }
+
 .modal.hidden {
   display: none;
 }
+
 .close-btn {
   float: right;
   cursor: pointer;
@@ -143,6 +130,7 @@ input {
   gap: 4px;
   margin: 8px 0;
 }
+
 .alphabet button {
   padding: 4px 8px;
   background: #222;
@@ -162,6 +150,7 @@ input {
   display: none;
 }
 
+/* адаптивность для узких экранов */
 @media (max-width: 600px) {
   .hero-card {
     flex-direction: column;
