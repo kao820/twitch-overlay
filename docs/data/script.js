@@ -1,6 +1,6 @@
-// DOMенты
 const heroesTab = document.getElementById('heroesTab');
 const glossaryTab = document.getElementById('glossaryTab');
+
 const heroesSection = document.getElementById('heroesSection');
 const glossarySection = document.getElementById('glossarySection');
 
@@ -16,24 +16,19 @@ const termTitle = document.getElementById('termTitle');
 const termDesc = document.getElementById('termDesc');
 const termClose = document.getElementById('termClose');
 
-let glossaryData = {};
-
-// Переключение вкладок
 heroesTab.onclick = () => setTab('heroes');
 glossaryTab.onclick = () => setTab('glossary');
 termClose.onclick = () => termModal.classList.add("hidden");
 
 function setTab(tab) {
   const isHeroes = tab === 'heroes';
-  heroesSection.classList.toggle('hidden', !isHeroes);
-  glossarySection.classList.toggle('hidden', isHeroes);
-  heroesTab.classList.toggle('active', isHeroes);
-  glossaryTab.classList.toggle('active', !isHeroes);
+  heroesTab.classList.toggle("active", isHeroes);
+  glossaryTab.classList.toggle("active", !isHeroes);
+  heroesSection.classList.toggle("hidden", !isHeroes);
+  glossarySection.classList.toggle("hidden", isHeroes);
 }
 
-// Загрузка героев
-fetch('data/heroes.json')
-  .then(res => res.json())
+fetch/herthen(res => res.json())
   .then(data => {
     data.forEach(hero => {
       const btn = document.createElement('button');
@@ -45,12 +40,14 @@ fetch('data/heroes.json')
 
 function showHero(hero) {
   heroCard.innerHTML = `
-   -left">
+    <div class="hero-left">
       <div class="hero-name">${hero.name}</div>
-      <div class="portrait" style="background-image: url('${hero.portrait}')"></div>
+      <div class="portrait" style="background-image:url('${hero.portrait}')"></div>
     </div>
     <div class="hero-right">
-      <div class="stat-row">❤ ${hero.hp} 🛡 ${hero.brn} ⬆ ${hero.urv}</div>
+      <div class="stat-row">
+        ❤ ${hero.hp} 🛡 ${hero.brn} ⬆ ${hero.urv}
+      </div>
       <div><b>Раса:</b> ${hero.race}</div>
       <div><b>Класс:</b> ${hero.class}</div>
       <div class="attrs">
@@ -61,12 +58,12 @@ function showHero(hero) {
         <div>МУД: ${hero.stats.МУД}</div>
         <div>ХАР: ${hero.stats.ХАР}</div>
       </div>
-    </div>
-  `;
-  heroCard.classList.remove('hidden');
+    </div>`;
+  heroCard.classList.remove("hidden");
 }
 
-// Загрузка глоссария
+let glossaryData = {};
+
 fetch('data/glossary.json')
   .then(res => res.json())
   .then(data => {
@@ -76,9 +73,9 @@ fetch('data/glossary.json')
   });
 
 function renderAlphabet() {
-  alphabet.innerHTML = '';
+  alphabet.innerHTML = "";
   Object.keys(glossaryData).forEach(letter => {
-    const btn = document.createElement('button');
+    const btn = document.createElement("button");
     btn.textContent = letter;
     btn.onclick = () => renderGlossaryList(letter);
     alphabet.appendChild(btn);
@@ -86,30 +83,30 @@ function renderAlphabet() {
 }
 
 function renderGlossaryList(letterFilter) {
-  termsList.innerHTML = '';
+  termsList.innerHTML = "";
   const query = searchInput.value.toLowerCase();
-  const letters = letterFilter ? [letterFilter] : Object.keys(glossaryData);
+  const keys = letterFilter ? [letterFilter] : Object.keys(glossaryData);
 
-  letters.forEach(letter => {
-    glossaryData[letter].forEach(entry => {
+  keys.forEach(letter => {
+    glossaryData[letter].forEach(item => {
       if (
         !query ||
-        entry.term.toLowerCase().includes(query) ||
-        entry.desc.toLowerCase().includes(query)
+        item.term.toLowerCase().includes(query) ||
+        item.desc.toLowerCase().includes(query)
       ) {
-        const div = document.createElement('div');
-        div.textContent = entry.term;
-        div.onclick = () => openTerm(entry);
+        const div = document.createElement("div");
+        div.textContent = item.term;
+        div.onclick = () => openTerm(item);
         termsList.appendChild(div);
       }
     });
   });
 }
 
-function openTerm(entry) {
-  termTitle.textContent = entry.term;
-  termDesc.textContent = entry.desc;
+searchInput.oninput = () => renderGlossaryList();
+
+function openTerm(item) {
+  termTitle.textContent = item.term;
+  termDesc.textContent = item.desc;
   termModal.classList.remove("hidden");
 }
-
-searchInput.addEventListener("input", () => renderGlossaryList());
