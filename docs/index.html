@@ -1,62 +1,35 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LRS Overlay</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-
-  <!-- панель всегда открыта -->
-  <div id="overlayPanel" class="overlay-panel">
-    <div class="overlay-header">
+  <link rel="stylesheet" href="styles.css" />
+>
+ ="="overlay">
+    <div class="header">
       <button id="heroesTab" class="tab active">Герои</button>
       <button id="glossaryTab" class="tab">Словарь</button>
     </div>
 
-    <!-- герои -->
     <div id="heroesSection" class="section">
       <div id="heroesList" class="heroes-list"></div>
       <div id="heroCard" class="hero-card hidden"></div>
     </div>
 
-    <!-- словарь -->
     <div id="glossarySection" class="section hidden">
       <input type="text" id="searchInput" placeholder="Поиск..." />
       <div id="alphabet" class="alphabet"></div>
       <div id="termsList" class="terms-list"></div>
     </div>
+
+    <div id="termModal" class="modal hidden">
+      <button id="termClose" class="close">✕</button>
+      <h3 id="termTitle"></h3>
+      <div id="termDesc"></div>
+    </div>
   </div>
 
-  <!-- модал термина -->
-  <div id="termModal" class="modal hidden">
-    <button id="termClose" class="close-btn">✕</button>
-    <h3 id="termTitle"></h3>
-    <div id="termDesc"></div>
-  </div>
-
-  <!-- основной скрипт -->
   <script src="script.js"></script>
-
-  <!-- Twitch SDK — можно не убирать, если используешь интерактив -->
-  <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
-  <script>
-    window.Twitch?.ext?.onAuthorized?.(function(auth) {
-      console.log("Twitch Extension авторизация успешна:", auth);
-
-      function sendClick(action) {
-        console.log(`Пользователь ${auth.userId} нажал:`, action);
-      }
-
-      const heroesTab = document.getElementById("heroesTab");
-      const glossaryTab = document.getElementById("glossaryTab");
-      const termClose = document.getElementById("termClose");
-
-      heroesTab.addEventListener("click", () => sendClick("heroesTab"));
-      glossaryTab.addEventListener("click", () => sendClick("glossaryTab"));
-      termClose.addEventListener("click", () => sendClick("termClose"));
-    });
-  </script>
 </body>
 </html>
