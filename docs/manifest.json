@@ -1,18 +1,19 @@
 {
   "manifest_version": 1,
-  "version": "1.0.0",
+  "version": "0.0.1",
   "type": "overlay",
-  "name": "RPG Overlay",
-  "description": "Простейший оверлей для теста",
-  "author_name": "Твоё имя",
+  "name": "Overlay for LRS games",
+  "description": "Дополнительное меню с основной информацией о героях и глоссарием",
+  "author_name": "Алёна К.",
   "author_url": "https://github.com/kao820",
   "views": {
     "overlay": {
-      "html": "index.html",
-      "js": "scripts.js",
+      "html": "index.html", "editor.html",
+      "js": "scripts.js","editor.js",
       "css": "styles.css",
-      "width": 1920,
-      "height": 1080
+      "json": "manifest.json", "glossary.json", "heroes.json", "settings.json",
+      "width": 450,
+      "height": 500
     }
   },
   "permissions": []
