@@ -118,8 +118,8 @@ function renderGlossaryList(filter) {
 
 searchInput.oninput = () => renderGlossaryList();
 
-function openTerm(item) {
-  termTitle.textContent = item.term;
-  termDesc.textContent = item.desc;
+function openTerm(t) {
+  termTitle.textContent = t.term;
+  termDesc.textContent = t.desc;
   termModal.classList.remove("hidden");
 }
