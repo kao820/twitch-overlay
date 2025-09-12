@@ -8,28 +8,42 @@
 </head>
 <body>
 
-div class="overlay">
-    <div class="header">
-      <button id="heroesTab" class="tab</button>
+  <!-- Панель всегда открыта -->
+  <div id="overlayPanel" class="overlay-panel">
+    <div class="overlay-header">
+      <button id="heroesTab" class="tab active">Герои</button>
       <button id="glossaryTab" class="tab">Словарь</button>
     </div>
 
     <div id="heroesSection" class="section">
       <div id="heroesList" class="heroes-list"></div>
       <div id="heroCard" class="hero-card hidden"></div>
-    </    <div id="glossarySection" class="section hidden">
-      <input type=" id="searchInput" placeholder="Поиск..." />
-      <div id="alphabet" class="alphabet"></div>
-      <div id="termsList" class="terms-list"></div>
     </div>
 
-    <div id="termModal" class="modal hidden">
-      <button id="termClose" class="close">✕</button>
-      <h3 id="termTitle"></h3>
-      <div id="termDesc"></div>
-    </div>
+    <div id="glossarySection" class="section hidden">
+      <input type="text" id="searchInput" placeholder="Поиск..." />
+      <div id="alphabet" class="alphabet"></div>
+      <div id="termsList" class="terms-list    </div>
+
+  <div id="termModal" class="modal hidden">
+    <button id="termClose" class="close-btn">✕</button>
+    <h3 id="termTitle"></h3>
+    <div id="termDesc"></div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="viewer.js"></script>
+
+  <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
+  <script>
+    window.Twitch?.ext?.onAuthorized?.(function (auth) {
+      console.log("Twitch Extension авторизация успешна:", auth);
+
+      function sendClick(action) {
+        console.log(`Пользователь ${auth.userId} нажал:`, action);
+      }
+
+      document.getElementById("heroesTab").addEventListener("click", () => sendClick("heroesTab"));
+      document.getElementById("glossaryTab").addEventListener("click", () => sendClick("glossaryTab"));
+      document.getElementById("termClose").addEventListener("click", () => sendClick("term  </script>
 </body>
 </html>
