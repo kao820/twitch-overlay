@@ -180,10 +180,18 @@ document.getElementById('addTerm').onclick = ()=>{
 };
 
 downloadHeroesBtn.onclick = ()=> downloadJSON('heroes.json', heroes);
-downloadGlossBtn.onclick = ()=>{
-  const L = glossLetter.value;
-  sortGlossaryArray(glossary[L]);
-  downloadJSON('glossary.json', glossary);
+
+// Обновлённая кнопка скачивания glossary.json по алфавиту
+downloadGlossBtn.onclick = () => {
+  const sortedGlossary = {};
+  letters.forEach(L => {
+    if (glossary[L] && glossary[L].length) {
+      const arr = glossary[L].slice();
+      sortGlossaryArray(arr);
+      sortedGlossary[L] = arr;
+    }
+  });
+  downloadJSON('glossary.json', sortedGlossary);
 };
 
 // --- Вкладки ---
