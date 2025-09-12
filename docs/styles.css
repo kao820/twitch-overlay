@@ -2,7 +2,7 @@
   --panel-bg: rgba(6, 5, 1, 0.95);
   --text-color: #ff6a35;
   --btn-color: #ff6a35;
-  --scale-factor: 1.25; /* оставил то, что ты просила */
+  --scale-factor: 1.1; /* оставил то, что ты просила */
 }
 
 /* Базовые размеры (используются rem/em не менял, просто масштаб) */
@@ -66,8 +66,8 @@ body {
 /* Дефолт: 100px x 200px (ты просила уменьшить на 100/200 от 200x400) */
 .portrait {
   /* если это div с background-image */
-  width: 100px;
-  height: 200px;
+  width: 200px;
+  height: 400px;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -81,8 +81,8 @@ body {
 
 /* если у тебя используются <img class="portrait"> — поддержим и его */
 img.portrait {
-  width: 100px;
-  height: 200px;
+  width: 200px;
+  height: 400px;
   object-fit: cover;
   border-radius: 6px;
   flex-shrink: 0;
