@@ -2,7 +2,7 @@
   --panel-bg: rgba(6, 5, 1, 0.95);
   --text-color: #ff6a35;
   --btn-color: #ff6a35;
-  --font-scale: 1.5; /* масштаб текста */
+  --scale-factor: 1.25;
 }
 
 body {
@@ -12,27 +12,27 @@ body {
   background-color: black;
   background-size: cover;
   background-position: center;
-  font-size: calc(14px * var(--font-scale));
+  font-size: calc(16px * var(--scale-factor));
 }
 
 .overlay-panel {
-  padding: calc(12px * var(--font-scale));
+  padding: 12px;
 }
 
 .overlay-header {
   display: flex;
-  gap: calc(10px * var(--font-scale));
-  margin-bottom: calc(10px * var(--font-scale));
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .tab {
   border: 1px solid var(--text-color);
   background: transparent;
   color: var(--text-color);
-  padding: calc(6px * var(--font-scale)) calc(12px * var(--font-scale));
+  padding: 6px 12px;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 1em;
+  font-size: calc(14px * var(--scale-factor));
 }
 
 .tab.active {
@@ -41,60 +41,47 @@ body {
 }
 
 .section {
-  padding: calc(10px * var(--font-scale));
+  padding: 10px;
 }
 
 .heroes-list button {
   display: block;
   width: 100%;
-  margin-bottom: calc(6px * var(--font-scale));
+  margin-bottom: 6px;
   background: #111;
   color: var(--text-color);
   border: 1px solid #333;
   border-radius: 4px;
-  padding: calc(6px * var(--font-scale));
-  font-size: 1em;
+  padding: 6px;
+  font-size: calc(14px * var(--scale-factor));
 }
 
 .hero-card {
   display: flex;
-  gap: calc(12px * var(--font-scale));
-  margin-top: calc(15px * var(--font-scale));
+  gap: 12px;
+  margin-top: 15px;
   border: 1px solid #333;
-  padding: calc(10px * var(--font-scale));
+  padding: 10px;
   border-radius: 4px;
   background-color: #1a1a1a;
   width: auto;
-  max-width: 100%;
+  max-width: none;
 }
 
 .portrait {
-  width: 100px;
-  height: 200px;
-  background-size: cover;
-  background-position: center;
+  display: block;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  margin: 0 auto;
   border-radius: 6px;
-  flex-shrink: 0;
-}
-
-/* Адаптивность мобильная */
-@media (max-width: 600px) {
-  .hero-card {
-    flex-direction: column;
-    align-items: center;
-  }
-  .portrait {
-    width: 80%;
-    height: auto;
-    min-height: 150px;
-    max-height: 300px;
-  }
 }
 
 .attrs {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: calc(6px * var(--font-scale));
+  gap: 6px;
+  font-size: calc(14px * var(--scale-factor));
 }
 
 .modal {
@@ -104,12 +91,13 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   background: var(--panel-bg);
-  padding: calc(20px * var(--font-scale));
+  padding: 20px;
   color: var(--text-color);
   border-radius: 6px;
-  min-width: calc(300px * var(--font-scale));
-  max-width: 80%;
-  font-size: 1em;
+  width: 90vw;
+  max-width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .modal.hidden {
@@ -121,47 +109,57 @@ body {
   cursor: pointer;
   border: none;
   background: none;
-  font-size: calc(20px * var(--font-scale));
+  font-size: 20px;
   color: var(--text-color);
 }
 
 input {
   width: 100%;
-  margin-bottom: calc(8px * var(--font-scale));
+  margin-bottom: 8px;
   background: #111;
   border: 1px solid #333;
-  padding: calc(6px * var(--font-scale));
+  padding: 6px;
   color: var(--text-color);
   border-radius: 4px;
-  font-size: 1em;
+  font-size: calc(14px * var(--scale-factor));
 }
 
 .alphabet {
   display: flex;
   flex-wrap: wrap;
-  gap: calc(4px * var(--font-scale));
-  margin: calc(8px * var(--font-scale)) 0;
+  gap: 4px;
+  margin: 8px 0;
 }
 
 .alphabet button {
-  padding: calc(4px * var(--font-scale)) calc(8px * var(--font-scale));
+  padding: 4px 8px;
   background: #222;
   color: var(--text-color);
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  flex: 0 0 auto; /* кнопки не растягиваются на всю ширину */
-  font-size: 1em;
+  font-size: calc(14px * var(--scale-factor));
 }
 
 .terms-list div {
-  padding: calc(6px * var(--font-scale));
+  padding: 6px;
   border-bottom: 1px solid #333;
   cursor: pointer;
-  width: 100%; /* чтобы блок занимал всю ширину */
-  box-sizing: border-box;
+  font-size: calc(14px * var(--scale-factor));
 }
 
 .hidden {
   display: none;
+}
+
+/* адаптивность для узких экранов */
+@media (max-width: 600px) {
+  .hero-card {
+    flex-direction: column;
+    align-items: center;
+  }
+  .portrait {
+    max-width: 100%;
+    height: auto;
+  }
 }
