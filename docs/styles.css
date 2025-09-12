@@ -2,8 +2,11 @@
   --panel-bg: rgba(6, 5, 1, 0.95);
   --text-color: #ff6a35;
   --btn-color: #ff6a35;
-  --scale-factor: 1.25;
+  --scale-factor: 1.25; /* оставил то, что ты просила */
 }
+
+/* Базовые размеры (используются rem/em не менял, просто масштаб) */
+html { font-size: calc(16px * var(--scale-factor)); }
 
 body {
   margin: 0;
@@ -12,18 +15,11 @@ body {
   background-color: black;
   background-size: cover;
   background-position: center;
-  font-size: calc(16px * var(--scale-factor));
 }
 
-.overlay-panel {
-  padding: 12px;
-}
-
-.overlay-header {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
-}
+/* Панель / header / табы */
+.overlay-panel { padding: 12px; }
+.overlay-header { display: flex; gap: 10px; margin-bottom: 10px; }
 
 .tab {
   border: 1px solid var(--text-color);
@@ -32,18 +28,13 @@ body {
   padding: 6px 12px;
   border-radius: 4px;
   cursor: pointer;
-  font-size: calc(14px * var(--scale-factor));
+  font-size: 1rem;
 }
+.tab.active { background: var(--text-color); color: black; }
 
-.tab.active {
-  background: var(--text-color);
-  color: black;
-}
+.section { padding: 10px; }
 
-.section {
-  padding: 10px;
-}
-
+/* Список героев */
 .heroes-list button {
   display: block;
   width: 100%;
@@ -53,9 +44,10 @@ body {
   border: 1px solid #333;
   border-radius: 4px;
   padding: 6px;
-  font-size: calc(14px * var(--scale-factor));
+  font-size: 1rem;
 }
 
+/* Карточка героя */
 .hero-card {
   display: flex;
   gap: 12px;
@@ -65,25 +57,48 @@ body {
   border-radius: 4px;
   background-color: #1a1a1a;
   width: auto;
-  max-width: none;
-}
-
-.portrait {
-  display: block;
   max-width: 100%;
-  height: auto;
-  object-fit: contain;
-  margin: 0 auto;
-  border-radius: 6px;
+  box-sizing: border-box;
+  align-items: flex-start;
 }
 
+/* ---------- ПОРТРЕТЫ (поддержка и div с background-image, и img) ---------- */
+/* Дефолт: 100px x 200px (ты просила уменьшить на 100/200 от 200x400) */
+.portrait {
+  /* если это div с background-image */
+  width: 100px;
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 6px;
+  flex-shrink: 0;      /* не даём ужимать по оси flex (на больших экранах) */
+  box-sizing: border-box;
+  /* современный способ задать пропорцию — на случай, если высота сбросится */
+  aspect-ratio: 1 / 2;
+  overflow: hidden;
+}
+
+/* если у тебя используются <img class="portrait"> — поддержим и его */
+img.portrait {
+  width: 100px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+  display: block;
+}
+
+/* attributes блок (характеристики) */
 .attrs {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 6px;
-  font-size: calc(14px * var(--scale-factor));
+  font-size: 1rem;
+  color: var(--text-color);
 }
 
+/* Модальное окно словаря — адаптивное, прокручиваемое */
 .modal {
   position: fixed;
   z-index: 999;
@@ -91,28 +106,28 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   background: var(--panel-bg);
-  padding: 20px;
+  padding: 18px;
   color: var(--text-color);
-  border-radius: 6px;
-  width: 90vw;
-  max-width: 400px;
+  border-radius: 8px;
+  width: min(92vw, 420px);
   max-height: 90vh;
   overflow-y: auto;
+  box-sizing: border-box;
 }
 
-.modal.hidden {
-  display: none;
-}
+/* скрытый модал */
+.modal.hidden { display: none; }
 
 .close-btn {
   float: right;
   cursor: pointer;
   border: none;
   background: none;
-  font-size: 20px;
+  font-size: 1.2rem;
   color: var(--text-color);
 }
 
+/* поля ввода / поиск */
 input {
   width: 100%;
   margin-bottom: 8px;
@@ -121,45 +136,65 @@ input {
   padding: 6px;
   color: var(--text-color);
   border-radius: 4px;
-  font-size: calc(14px * var(--scale-factor));
+  box-sizing: border-box;
 }
 
+/* алфавит */
 .alphabet {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 6px;
   margin: 8px 0;
 }
-
 .alphabet button {
-  padding: 4px 8px;
+  padding: 6px 8px;
   background: #222;
   color: var(--text-color);
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: calc(14px * var(--scale-factor));
+  flex: 0 0 auto; /* не растягиваем */
+  font-size: 0.95rem;
 }
 
+/* список терминов */
 .terms-list div {
-  padding: 6px;
+  padding: 8px;
   border-bottom: 1px solid #333;
   cursor: pointer;
-  font-size: calc(14px * var(--scale-factor));
+  box-sizing: border-box;
 }
 
-.hidden {
-  display: none;
-}
+/* утилитарные */
+.hidden { display: none; }
 
-/* адаптивность для узких экранов */
-@media (max-width: 600px) {
+/* ----------------- Адаптивные правила (мобильные) ----------------- */
+@media (max-width: 700px) {
   .hero-card {
     flex-direction: column;
     align-items: center;
   }
-  .portrait {
-    max-width: 100%;
-    height: auto;
+
+  /* на мобилке портрет подстраивается по ширине контейнера,
+     но сохраняет aspect-ratio чтобы не «схлопнуться» */
+  .portrait,
+  img.portrait {
+    width: 80%;
+    height: auto;          /* пусть браузер вычислит высоту по aspect-ratio */
+    max-width: 240px;      /* не даём слишком огромный */
+    min-height: 120px;     /* чтобы совсем не схлопнулся */
+    aspect-ratio: 1 / 2;
+    flex-shrink: 0;
+  }
+
+  .modal {
+    width: 94vw;
+    max-width: 94vw;
+    padding: 14px;
+  }
+
+  .alphabet button {
+    padding: 8px 10px;
+    font-size: 1rem;
   }
 }
