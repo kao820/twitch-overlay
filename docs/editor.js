@@ -5,7 +5,7 @@ const glossList = document.getElementById('glossList');
 const downloadHeroesBtn = document.getElementById('downloadHeroes');
 const downloadGlossBtn = document.getElementById('downloadGloss');
 
-// Статистика персонажей: МУД вместо МДР
+// Статистика персонажей
 const statsFields = ['СИЛ','ЛОВ','ВЫН','ИНТ','МУД','ХАР'];
 
 // --- Данные ---
@@ -13,7 +13,7 @@ let heroes = [];
 let glossary = {};
 const letters = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'.split('');
 
-// --- Загрузка данных из файлов ---
+// --- Загрузка JSON ---
 async function loadJSON(path){
   try{
     const r = await fetch(path, {cache:'no-store'});
@@ -22,22 +22,17 @@ async function loadJSON(path){
   return null;
 }
 
+// --- Инициализация ---
 (async function init(){
   heroes = await loadJSON('data/heroes.json') || [];
   glossary = await loadJSON('data/glossary.json') || {};
-  populateGlossLetters();
   renderHeroes();
+  populateGlossLetters();
   renderGloss();
 })();
 
-// --- Хелперы ---
-function escapeHtml(s){ 
-  return (s||'').toString()
-    .replaceAll('&','&amp;')
-    .replaceAll('<','&lt;')
-    .replaceAll('>','&gt;')
-    .replaceAll('"','&quot;'); 
-}
+// --- Вспомогательные функции ---
+function escapeHtml(s){ return (s||'').toString().replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'); }
 
 function downloadJSON(name, obj){
   const blob = new Blob([JSON.stringify(obj,null,2)], {type:'application/json'});
@@ -48,10 +43,9 @@ function downloadJSON(name, obj){
   URL.revokeObjectURL(a.href);
 }
 
-// --- Рендер персонажей ---
+// --- Герои ---
 function renderHeroes(){
-  if(!charsContainer) return;
-  charsContainer.innerHTML='';
+  charsContainer.innerHTML = '';
   for(let i=0;i<4;i++){
     const c = heroes[i] || {name:'', race:'', class:'', portrait:'', stats:{}};
     const div = document.createElement('div'); div.className='char';
@@ -98,27 +92,27 @@ function attachHeroListeners(){
   });
 }
 
-// --- Рендер глоссария ---
+// --- Словарь ---
 function populateGlossLetters(){
-  if(!glossLetter) return;
-  glossLetter.innerHTML='';
+  glossLetter.innerHTML = '';
   letters.forEach(l=>{
-    const opt = document.createElement('option'); 
-    opt.value=l; opt.textContent=l;
+    const opt = document.createElement('option');
+    opt.value = l; opt.textContent = l;
     glossLetter.appendChild(opt);
   });
+  glossLetter.onchange = renderGloss;
 }
 
 function renderGloss(){
-  if(!glossLetter || !glossList) return;
   const L = glossLetter.value || letters[0];
-  if(!glossary[L]) glossary[L] = [];
-  const list = glossary[L];
-  glossList.innerHTML='';
+  const list = glossary[L] || [];
+  glossList.innerHTML = '';
   list.forEach((it, idx)=>{
     const div = document.createElement('div');
-    div.style.display='flex'; div.style.justifyContent='space-between';
-    div.style.padding='6px'; div.style.borderBottom='1px solid #111';
+    div.style.display='flex';
+    div.style.justifyContent='space-between';
+    div.style.padding='6px';
+    div.style.borderBottom='1px solid #111';
     div.innerHTML = `<div><strong>${escapeHtml(it.term)}</strong><div class="small">${escapeHtml(it.desc)}</div></div>
       <div style="display:flex;gap:6px">
         <button class="editTerm" data-i="${idx}">✎</button>
@@ -130,41 +124,49 @@ function renderGloss(){
 }
 
 function attachGlossListeners(){
-  if(!glossList || !glossLetter) return;
   document.querySelectorAll('.delTerm').forEach(b=>{
     b.onclick = ()=>{
-      const i = +b.dataset.i; 
+      const i = +b.dataset.i;
       const L = glossLetter.value;
-      glossary[L].splice(i,1); 
+      glossary[L].splice(i,1);
       renderGloss();
     };
   });
   document.querySelectorAll('.editTerm').forEach(b=>{
     b.onclick = ()=>{
-      const i = +b.dataset.i; 
+      const i = +b.dataset.i;
       const L = glossLetter.value;
       const it = glossary[L][i];
       const t = prompt('Термин', it.term); if(t===null) return;
       const d = prompt('Описание', it.desc); if(d===null) return;
-      it.term=t; it.desc=d; renderGloss();
+      it.term = t; it.desc = d;
+      renderGloss();
     };
   });
 }
 
 // --- Кнопки ---
-document.getElementById('addTerm')?.addEventListener('click', ()=>{
+document.getElementById('addTerm').onclick = ()=>{
   const t = document.getElementById('newTerm').value.trim();
   const d = document.getElementById('newDesc').value.trim();
   if(!t) return alert('Введите термин');
   const L = glossLetter.value;
-  if(!glossary[L]) glossary[L]=[];
+  if(!glossary[L]) glossary[L] = [];
   glossary[L].push({term:t,desc:d});
-  document.getElementById('newTerm').value=''; 
-  document.getElementById('newDesc').value='';
+  document.getElementById('newTerm').value=''; document.getElementById('newDesc').value='';
   renderGloss();
+};
+
+downloadHeroesBtn.onclick = ()=> downloadJSON('heroes.json', heroes);
+downloadGlossBtn.onclick = ()=> downloadJSON('glossary.json', glossary);
+
+// --- Вкладки ---
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    const target = tab.dataset.tab;
+    document.getElementById('tabHeroes').style.display = (target==='heroes') ? '' : 'none';
+    document.getElementById('tabGlossary').style.display = (target==='glossary') ? '' : 'none';
+  });
 });
-
-glossLetter?.addEventListener('change', renderGloss);
-
-downloadHeroesBtn?.addEventListener('click', ()=> downloadJSON('heroes.json', heroes));
-downloadGlossBtn?.addEventListener('click', ()=> downloadJSON('glossary.json', glossary));
