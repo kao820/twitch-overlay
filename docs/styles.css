@@ -2,7 +2,7 @@
   --panel-bg: rgba(6, 5, 1, 0.95);
   --text-color: #ff6a35;
   --btn-color: #ff6a35;
-  --scale: 1.5; /* общий масштаб интерфейса */
+  --font-scale: 1.5; /* масштаб текста */
 }
 
 body {
@@ -12,27 +12,27 @@ body {
   background-color: black;
   background-size: cover;
   background-position: center;
-  font-size: calc(14px * var(--scale));
+  font-size: calc(14px * var(--font-scale));
 }
 
 .overlay-panel {
-  padding: calc(12px * var(--scale));
+  padding: calc(12px * var(--font-scale));
 }
 
 .overlay-header {
   display: flex;
-  gap: calc(10px * var(--scale));
-  margin-bottom: calc(10px * var(--scale));
+  gap: calc(10px * var(--font-scale));
+  margin-bottom: calc(10px * var(--font-scale));
 }
 
 .tab {
   border: 1px solid var(--text-color);
   background: transparent;
   color: var(--text-color);
-  padding: calc(6px * var(--scale)) calc(12px * var(--scale));
+  padding: calc(6px * var(--font-scale)) calc(12px * var(--font-scale));
   border-radius: 4px;
   cursor: pointer;
-  font-size: calc(14px * var(--scale));
+  font-size: 1em;
 }
 
 .tab.active {
@@ -41,48 +41,60 @@ body {
 }
 
 .section {
-  padding: calc(10px * var(--scale));
+  padding: calc(10px * var(--font-scale));
 }
 
 .heroes-list button {
   display: block;
   width: 100%;
-  margin-bottom: calc(6px * var(--scale));
+  margin-bottom: calc(6px * var(--font-scale));
   background: #111;
   color: var(--text-color);
   border: 1px solid #333;
   border-radius: 4px;
-  padding: calc(6px * var(--scale));
-  font-size: calc(14px * var(--scale));
+  padding: calc(6px * var(--font-scale));
+  font-size: 1em;
 }
 
 .hero-card {
   display: flex;
-  gap: calc(12px * var(--scale));
-  margin-top: calc(15px * var(--scale));
+  gap: calc(12px * var(--font-scale));
+  margin-top: calc(15px * var(--font-scale));
   border: 1px solid #333;
-  padding: calc(10px * var(--scale));
+  padding: calc(10px * var(--font-scale));
   border-radius: 4px;
   background-color: #1a1a1a;
   width: auto;
-  max-width: none;
+  max-width: 100%;
 }
 
 .portrait {
-  width: 100px;      /* уменьшили на 100px */
-  height: 200px;     /* уменьшили на 200px */
+  width: 100px;
+  height: 200px;
   background-size: cover;
   background-position: center;
   border-radius: 6px;
   flex-shrink: 0;
-  max-width: 100%;
-  max-height: 100%;
+}
+
+/* Адаптивность мобильная */
+@media (max-width: 600px) {
+  .hero-card {
+    flex-direction: column;
+    align-items: center;
+  }
+  .portrait {
+    width: 80%;
+    height: auto;
+    min-height: 150px;
+    max-height: 300px;
+  }
 }
 
 .attrs {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: calc(6px * var(--scale));
+  gap: calc(6px * var(--font-scale));
 }
 
 .modal {
@@ -92,12 +104,12 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   background: var(--panel-bg);
-  padding: calc(20px * var(--scale));
+  padding: calc(20px * var(--font-scale));
   color: var(--text-color);
   border-radius: 6px;
-  min-width: 300px;
+  min-width: calc(300px * var(--font-scale));
   max-width: 80%;
-  font-size: calc(14px * var(--scale));
+  font-size: 1em;
 }
 
 .modal.hidden {
@@ -109,63 +121,47 @@ body {
   cursor: pointer;
   border: none;
   background: none;
-  font-size: calc(20px * var(--scale));
+  font-size: calc(20px * var(--font-scale));
   color: var(--text-color);
 }
 
 input {
   width: 100%;
-  margin-bottom: calc(8px * var(--scale));
+  margin-bottom: calc(8px * var(--font-scale));
   background: #111;
   border: 1px solid #333;
-  padding: calc(6px * var(--scale));
+  padding: calc(6px * var(--font-scale));
   color: var(--text-color);
   border-radius: 4px;
-  font-size: calc(14px * var(--scale));
+  font-size: 1em;
 }
 
 .alphabet {
   display: flex;
   flex-wrap: wrap;
-  gap: calc(4px * var(--scale));
-  margin: calc(8px * var(--scale)) 0;
+  gap: calc(4px * var(--font-scale));
+  margin: calc(8px * var(--font-scale)) 0;
 }
 
 .alphabet button {
-  padding: calc(4px * var(--scale)) calc(8px * var(--scale));
+  padding: calc(4px * var(--font-scale)) calc(8px * var(--font-scale));
   background: #222;
   color: var(--text-color);
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: calc(14px * var(--scale));
-  width: auto;
-  min-width: 30px;
-  max-width: 50px;
-  flex: none;
+  flex: 0 0 auto; /* кнопки не растягиваются на всю ширину */
+  font-size: 1em;
 }
 
 .terms-list div {
-  padding: calc(6px * var(--scale));
+  padding: calc(6px * var(--font-scale));
   border-bottom: 1px solid #333;
   cursor: pointer;
-  word-break: break-word; /* чтобы текст переносился при нехватке места */
+  width: 100%; /* чтобы блок занимал всю ширину */
+  box-sizing: border-box;
 }
 
 .hidden {
   display: none;
-}
-
-/* адаптивность для узких экранов */
-@media (max-width: 600px) {
-  .hero-card {
-    flex-direction: column;
-    align-items: center;
-  }
-  .portrait {
-    width: 100%;  /* адаптивная ширина */
-    height: auto; /* адаптивная высота */
-    max-width: 100px;
-    max-height: 200px;
-  }
 }
