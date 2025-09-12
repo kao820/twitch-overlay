@@ -117,4 +117,20 @@ input {
   margin: 8px 0;
 }
 .alphabet button {
-  padding:
+  padding: 4px 8px;
+  background: #222;
+  color: var(--text-color);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.terms-list div {
+  padding: 6px;
+  border-bottom: 1px solid #333;
+  cursor: pointer;
+}
+
+.hidden {
+  display: none;
+}
