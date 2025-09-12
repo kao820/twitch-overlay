@@ -1,132 +1,140 @@
 :root {
-  --panel-bg: rgba(6, 5, 1, 0.95);
-  --text-color: #ff6a35;
-  --btn-color: #ff6a35;
+  --bg: #000;
+  --fg: #ff6a35;
+  --panel: rgba(10, 10, 10, 0.95);
 }
 
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  width: 100%;
+  background: var(--bg);
+  color: var(--fg);
   font-family: Arial, sans-serif;
-  background: transparent;
-  color: var(--text-color);
 }
 
-.overlay-panel {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--panel-bg);
-  padding: 12px;
-  box-sizing: border-box;
+.overlay {
   display: flex;
   flex-direction: column;
+  height: 100%;
+  padding: 12px;
+  box-sizing: border-box;
+  background: var(--panel);
 }
 
-.overlay-header {
+.header {
   display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .tab {
-  border: 1px solid var(--text-color);
+  border: 1px solid var(--fg);
+  color: var(--fg);
+  padding: 6px 10px;
+  border-radius: 6px;
   background: transparent;
-  color: var(--text-color);
-  padding: 6px 12px;
-  border-radius: 4px;
   cursor: pointer;
 }
 .tab.active {
-  background: var(--text-color);
+ var(--fg);
   color: #000;
 }
 
 .section {
   flex: 1;
-  overflow: auto;
-  padding: 6px;
+  overflow-y: auto;
 }
 
-/* Герои */
 .heroes-list button {
   width: 100%;
+  padding: 8px;
+  margin: 4px 0;
   background: #111;
-  border: 1px solid #222;
-  color: var(--text-color);
-  padding: 6px;
-  border-radius: 4px;
-  margin-bottom: 6px;
+  color: var(--fg);
+  border: 1px solid #333;
   cursor: pointer;
+  border-radius: 4px;
 }
+
 .hero-card {
   display: flex;
   gap: 16px;
   margin-top: 12px;
-  background: #222;
-  border-radius: 8px;
-  padding: 10px;
+  border: 1px solid #333;
+  padding: 12px;
+  border-radius: 6px;
 }
+
 .portrait {
   width: 120px;
   height: 120px;
-  background: #333 center/cover no-repeat;
+  background-color: #444;
+  background-size: cover;
+  background-position: center;
   border-radius: 8px;
 }
-.hero-name {
-  font-weight: bold;
-  font-size: 18px;
-  margin-bottom: 8px;
-  text-align: center;
-}
-.stat-row { margin-bottom: 6px }
-.attrs { display: grid; grid-template-columns: repeat(2,1fr); gap: 6px; }
 
-/* Словарь */
-#searchInput {
-  width: 100%;
-  margin-bottom: 8px;
-  padding: 6px;
-  border-radius: 4px;
-  border: 1px solid #444;
-  background: #111;
-  color: var(--text-color);
-}
-.alphabet {
-  display: flex;
-  flex-wrap: wrap;
+.attrs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 4px;
-  margin-bottom: 8px;
-}
-.alphabet button {
-  border: none;
-  background: #222;
-  color: var(--text-color);
-  padding: 4px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.terms-list div {
-  padding: 6px;
-  border-bottom: 1px solid #333;
-  cursor: pointer;
 }
 
-/* Модал */
 .modal {
   position: fixed;
   top: 50%;
   left: 50%;
-  transform: translate(-50%,-50%);
-  background: var(--panel-bg);
+  transform: translate(-50%, -50%);
+  max-width: 400px;
+  width: 90%;
+  background: var(--panel);
   padding: 16px;
   border-radius: 8px;
-  max-width: 450px;
-  color: var(--text-color);
   z-index: 999;
 }
-.modal.hidden { display: none; }
+.modal.hidden {
+  display: none;
+}
+.close {
+  float: right;
+  background: none;
+  border: none;
+  color: var(--fg);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.alphabet {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 10px;
+}
+.alphabet button {
+  padding: 4px 8px;
+  background: #111;
+  color: var(--fg);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.terms-list div {
+  padding: 6px;
+  border-bottom: 1px solid #333;
+}
+
+input#searchInput {
+  width: 100%;
+  padding: 6px;
+  border-radius: 4px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: var(--fg);
+  margin-bottom: 10px;
+}
+
+.hidden {
+  display: none;
+}
