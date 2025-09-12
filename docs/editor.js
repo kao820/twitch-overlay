@@ -1,3 +1,4 @@
+// --- Элементы DOM ---
 const charsContainer = document.getElementById('charsContainer');
 const glossLetter = document.getElementById('glossLetter');
 const glossList = document.getElementById('glossList');
@@ -24,14 +25,18 @@ async function loadJSON(path){
 (async function init(){
   heroes = await loadJSON('data/heroes.json') || [];
   glossary = await loadJSON('data/glossary.json') || {};
-  renderHeroes();
   populateGlossLetters();
+  renderHeroes();
   renderGloss();
 })();
 
 // --- Хелперы ---
 function escapeHtml(s){ 
-  return (s||'').toString().replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'); 
+  return (s||'').toString()
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;'); 
 }
 
 function downloadJSON(name, obj){
@@ -39,14 +44,13 @@ function downloadJSON(name, obj){
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = name;
-  document.body.appendChild(a);
   a.click();
-  a.remove();
   URL.revokeObjectURL(a.href);
 }
 
 // --- Рендер персонажей ---
 function renderHeroes(){
+  if(!charsContainer) return;
   charsContainer.innerHTML='';
   for(let i=0;i<4;i++){
     const c = heroes[i] || {name:'', race:'', class:'', portrait:'', stats:{}};
@@ -96,22 +100,25 @@ function attachHeroListeners(){
 
 // --- Рендер глоссария ---
 function populateGlossLetters(){
+  if(!glossLetter) return;
   glossLetter.innerHTML='';
   letters.forEach(l=>{
-    const opt = document.createElement('option'); opt.value=l; opt.textContent=l;
+    const opt = document.createElement('option'); 
+    opt.value=l; opt.textContent=l;
     glossLetter.appendChild(opt);
   });
 }
 
 function renderGloss(){
-  if(!glossLetter) return;
+  if(!glossLetter || !glossList) return;
   const L = glossLetter.value || letters[0];
-  const list = glossary[L] || [];
-  if(!glossList) return;
+  if(!glossary[L]) glossary[L] = [];
+  const list = glossary[L];
   glossList.innerHTML='';
   list.forEach((it, idx)=>{
     const div = document.createElement('div');
-    div.style.display='flex'; div.style.justifyContent='space-between'; div.style.padding='6px'; div.style.borderBottom='1px solid #111';
+    div.style.display='flex'; div.style.justifyContent='space-between';
+    div.style.padding='6px'; div.style.borderBottom='1px solid #111';
     div.innerHTML = `<div><strong>${escapeHtml(it.term)}</strong><div class="small">${escapeHtml(it.desc)}</div></div>
       <div style="display:flex;gap:6px">
         <button class="editTerm" data-i="${idx}">✎</button>
@@ -123,16 +130,19 @@ function renderGloss(){
 }
 
 function attachGlossListeners(){
-  if(!glossList) return;
+  if(!glossList || !glossLetter) return;
   document.querySelectorAll('.delTerm').forEach(b=>{
     b.onclick = ()=>{
-      const i = +b.dataset.i; const L = glossLetter.value;
-      glossary[L].splice(i,1); renderGloss();
+      const i = +b.dataset.i; 
+      const L = glossLetter.value;
+      glossary[L].splice(i,1); 
+      renderGloss();
     };
   });
   document.querySelectorAll('.editTerm').forEach(b=>{
     b.onclick = ()=>{
-      const i = +b.dataset.i; const L = glossLetter.value;
+      const i = +b.dataset.i; 
+      const L = glossLetter.value;
       const it = glossary[L][i];
       const t = prompt('Термин', it.term); if(t===null) return;
       const d = prompt('Описание', it.desc); if(d===null) return;
@@ -142,31 +152,19 @@ function attachGlossListeners(){
 }
 
 // --- Кнопки ---
-const addTermBtn = document.getElementById('addTerm');
-if(addTermBtn){
-  addTermBtn.onclick = ()=>{
-    const t = document.getElementById('newTerm').value.trim();
-    const d = document.getElementById('newDesc').value.trim();
-    if(!t) return alert('Введите термин');
-    const L = glossLetter.value;
-    if(!glossary[L]) glossary[L]=[];
-    glossary[L].push({term:t,desc:d});
-    document.getElementById('newTerm').value=''; 
-    document.getElementById('newDesc').value='';
-    renderGloss();
-  };
-}
-
-if(downloadHeroesBtn) downloadHeroesBtn.onclick = ()=> downloadJSON('heroes.json', heroes);
-if(downloadGlossBtn) downloadGlossBtn.onclick = ()=> downloadJSON('glossary.json', glossary);
-
-// --- Переключение вкладок ---
-document.querySelectorAll('.tab').forEach(tab=>{
-  tab.onclick = ()=>{
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    tab.classList.add('active');
-    const t = tab.dataset.tab;
-    document.getElementById('tabHeroes').style.display = t==='heroes' ? '' : 'none';
-    document.getElementById('tabGlossary').style.display = t==='glossary' ? '' : 'none';
-  };
+document.getElementById('addTerm')?.addEventListener('click', ()=>{
+  const t = document.getElementById('newTerm').value.trim();
+  const d = document.getElementById('newDesc').value.trim();
+  if(!t) return alert('Введите термин');
+  const L = glossLetter.value;
+  if(!glossary[L]) glossary[L]=[];
+  glossary[L].push({term:t,desc:d});
+  document.getElementById('newTerm').value=''; 
+  document.getElementById('newDesc').value='';
+  renderGloss();
 });
+
+glossLetter?.addEventListener('change', renderGloss);
+
+downloadHeroesBtn?.addEventListener('click', ()=> downloadJSON('heroes.json', heroes));
+downloadGlossBtn?.addEventListener('click', ()=> downloadJSON('glossary.json', glossary));
