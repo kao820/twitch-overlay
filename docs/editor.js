@@ -32,13 +32,7 @@ async function loadJSON(path){
 })();
 
 // --- Вспомогательные функции ---
-function escapeHtml(s){ 
-  return (s||'').toString()
-    .replaceAll('&','&amp;')
-    .replaceAll('<','&lt;')
-    .replaceAll('>','&gt;')
-    .replaceAll('"','&quot;'); 
-}
+function escapeHtml(s){ return (s||'').toString().replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'); }
 
 function downloadJSON(name, obj){
   const blob = new Blob([JSON.stringify(obj,null,2)], {type:'application/json'});
@@ -54,8 +48,7 @@ function renderHeroes(){
   charsContainer.innerHTML = '';
   for(let i=0;i<4;i++){
     const c = heroes[i] || {name:'', race:'', class:'', portrait:'', stats:{}};
-    const div = document.createElement('div'); 
-    div.className='char';
+    const div = document.createElement('div'); div.className='char';
     div.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center">
         <strong>Колонка ${i+1}</strong>
@@ -112,8 +105,23 @@ function populateGlossLetters(){
 
 function renderGloss(){
   const L = glossLetter.value || letters[0];
-  const list = (glossary[L] || []).slice(); // копия для сортировки
-  list.sort((a,b) => a.term.localeCompare(b.term,'ru')); // сортировка по алфавиту
+  const list = (glossary[L] || []).slice(); // копия массива
+
+  // --- сортировка по русскому алфавиту ---
+  list.sort((a,b)=>{
+    const termA = a.term.toUpperCase();
+    const termB = b.term.toUpperCase();
+    const len = Math.max(termA.length, termB.length);
+    for(let i=0;i<len;i++){
+      const chA = termA[i] || '';
+      const chB = termB[i] || '';
+      const idxA = letters.indexOf(chA);
+      const idxB = letters.indexOf(chB);
+      if(idxA!==idxB) return idxA-idxB;
+    }
+    return 0;
+  });
+
   glossList.innerHTML = '';
   list.forEach((it, idx)=>{
     const div = document.createElement('div');
