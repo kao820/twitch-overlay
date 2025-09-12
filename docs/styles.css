@@ -1,1 +1,167 @@
-:root { --panel-bg: rgba(6, 5, 1, 0.95); --text-color: #ff6a35; --btn-color: #ff6a35; } body { margin: 0; font-family: Arial, sans-serif; color: var(--text-color); background-color: black; background-size: cover; background-position: center; } .overlay-panel { padding: 12px; } .overlay-header { display: flex; gap: 10px; margin-bottom: 10px; } .tab { border: 1px solid var(--text-color); background: transparent; color: var(--text-color); padding: 6px 12px; border-radius: 4px; cursor: pointer; } .tab.active { background: var(--text-color); color: black; } .section { padding: 10px; } .heroes-list button { display: block; width: 100%; margin-bottom: 6px; background: #111; color: var(--text-color); border: 1px solid #333; border-radius: 4px; padding: 6px; } .hero-card { display: flex; gap: 12px; margin-top: 15px; border: 1px solid #333; padding: 10px; border-radius: 4px; background-color: #1a1a1a; /* карточка подстраивается под контент */ width: auto; max-width: none; } .portrait { /* желаемый размер */ width: 200px; height: 400px; background-size: cover; background-position: center; border-radius: 6px; /* чтобы текст не сжимал картинку */ flex-shrink: 0; /* адаптивность */ max-width: 200px; max-height: 400px; } .attrs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; } .modal { position: fixed; z-index: 999; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--panel-bg); padding: 20px; color: var(--text-color); border-radius: 6px; min-width: 300px; max-width: 80%; } .modal.hidden { display: none; } .close-btn { float: right; cursor: pointer; border: none; background: none; font-size: 20px; color: var(--text-color); } input { width: 100%; margin-bottom: 8px; background: #111; border: 1px solid #333; padding: 6px; color: var(--text-color); border-radius: 4px; } .alphabet { display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 0; } .alphabet button { padding: 4px 8px; background: #222; color: var(--text-color); border: none; border-radius: 4px; cursor: pointer; } .terms-list div { padding: 6px; border-bottom: 1px solid #333; cursor: pointer; } .hidden { display: none; } /* адаптивность для узких экранов */ @media (max-width: 600px) { .hero-card { flex-direction: column; align-items: center; } .portrait { width: 100%; height: auto; max-width: 200px; max-height: 400px; } }
+:root {
+  --panel-bg: rgba(6, 5, 1, 0.95);
+  --text-color: #ff6a35;
+  --btn-color: #ff6a35;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: var(--text-color);
+  background-color: black;
+  background-size: cover;
+  background-position: center;
+}
+
+.overlay-panel {
+  padding: 12px;
+}
+
+.overlay-header {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.tab {
+  border: 1px solid var(--text-color);
+  background: transparent;
+  color: var(--text-color);
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.tab.active {
+  background: var(--text-color);
+  color: black;
+}
+
+.section {
+  padding: 10px;
+}
+
+.heroes-list button {
+  display: block;
+  width: 100%;
+  margin-bottom: 6px;
+  background: #111;
+  color: var(--text-color);
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 6px;
+}
+
+.hero-card {
+  display: flex;
+  gap: 12px;
+  margin-top: 15px;
+  border: 1px solid #333;
+  padding: 10px;
+  border-radius: 4px;
+  background-color: #1a1a1a;
+
+  /* карточка подстраивается под контент */
+  width: auto;
+  max-width: none;
+}
+
+.portrait {
+  /* желаемый размер */
+  width: 200px;
+  height: 400px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 6px;
+
+  /* чтобы текст не сжимал картинку */
+  flex-shrink: 0;
+
+  /* адаптивность */
+  max-width: 200px;
+  max-height: 400px;
+}
+
+/* Блок характеристик героя */
+.attrs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+
+  /* увеличиваем шрифт в 2 раза и делаем жирным */
+  font-size: 2em;
+  font-weight: bold;
+}
+
+.modal {
+  position: fixed;
+  z-index: 999;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--panel-bg);
+  padding: 20px;
+  color: var(--text-color);
+  border-radius: 6px;
+  min-width: 300px;
+  max-width: 80%;
+}
+.modal.hidden {
+  display: none;
+}
+.close-btn {
+  float: right;
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-size: 20px;
+  color: var(--text-color);
+}
+
+input {
+  width: 100%;
+  margin-bottom: 8px;
+  background: #111;
+  border: 1px solid #333;
+  padding: 6px;
+  color: var(--text-color);
+  border-radius: 4px;
+}
+
+.alphabet {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 8px 0;
+}
+.alphabet button {
+  padding: 4px 8px;
+  background: #222;
+  color: var(--text-color);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.terms-list div {
+  padding: 6px;
+  border-bottom: 1px solid #333;
+  cursor: pointer;
+}
+
+.hidden {
+  display: none;
+}
+
+/* адаптивность для узких экранов */
+@media (max-width: 600px) {
+  .hero-card {
+    flex-direction: column;
+    align-items: center;
+  }
+  .portrait {
+    width: 100%;
+    height: auto;
+    max-width: 200px;
+    max-height: 400px;
+  }
+}
