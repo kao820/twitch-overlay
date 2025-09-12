@@ -23,7 +23,8 @@
     <div id="glossarySection" class="section hidden">
       <input type="text" id="searchInput" placeholder="Поиск..." />
       <div id="alphabet" class="alphabet"></div>
-      <div id="termsList" class="terms-list    </div>
+      <div id="termsList" class="terms-list"></div>
+    </div>
 
   <div id="termModal" class="modal hidden">
     <button id="termClose" class="close-btn">✕</button>
@@ -32,20 +33,23 @@
   </div>
 
   <script src="viewer.js"></script>
-
   <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
+
   <script>
+    // глобальная функция
+    function sendClick(action) {
+      console.log("Пользователь кликнул:", action);
+    }
+
+    // Twitch авторизация
     window.Twitch?.ext?.onAuthorized?.(function (auth) {
       console.log("Twitch Extension авторизация успешна:", auth);
+    });
 
-      function sendClick(action) {
-        console.log(`Пользователь ${auth.userId} нажал:`, action);
-      }</script>
-
-      <script> 
-      document.getElementById("heroesTab").addEventListener("click", () => sendClick("heroesTab"));
-      document.getElementById("glossaryTab").addEventListener("click", () => sendClick("glossaryTab"));
-      document.getElementById("termClose").addEventListener("click", () => sendClick("term"));
-      </script>
+    // Навешиваем события
+    document.getElementById("heroesTab")?.addEventListener("click", () => sendClick("heroesTab"));
+    document.getElementById("glossaryTab")?.addEventListener("click", () => sendClick("glossaryTab"));
+    document.getElementById("termClose")?.addEventListener("click", () => sendClick("termClose"));
+  </script>
 </body>
 </html>
