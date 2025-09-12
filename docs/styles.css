@@ -59,26 +59,23 @@ body {
   width: auto;
   max-width: 100%;
   box-sizing: border-box;
-  align-items: stretch; /* растягиваем портрет по высоте карточки */
-  overflow: hidden;     /* не даём портрету вылезать за пределы карточки */
+  align-items: flex-start; /* портрет слева, характеристики справа */
 }
 
 /* ---------- ПОРТРЕТЫ ---------- */
 .portrait {
-  width: 200px;         /* фиксированная ширина */
-  max-height: 100%;     /* не вылезаем за пределы карточки */
+  width: 200px;          /* фиксированная ширина */
+  aspect-ratio: 1 / 2;   /* сохраняем пропорции */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   border-radius: 6px;
   flex-shrink: 0;
-  box-sizing: border-box;
-  overflow: hidden;
 }
 
 img.portrait {
   width: 200px;
-  max-height: 100%;     /* растягиваем, но не больше родителя */
+  aspect-ratio: 1 / 2;   /* сохраняем пропорции */
   object-fit: cover;
   border-radius: 6px;
   flex-shrink: 0;
@@ -166,14 +163,14 @@ input {
 /* ----------------- Адаптивные правила ----------------- */
 @media (max-width: 700px) {
   .hero-card {
-    flex-direction: row;   /* оставляем горизонтально */
-    align-items: stretch;  /* портрет растягивается по высоте */
+    flex-direction: row; /* портрет слева, характеристики справа */
+    align-items: flex-start;
   }
 
   .portrait,
   img.portrait {
-    width: 120px;         /* ширина адаптирована для мобильных */
-    max-height: 100%;     /* портрет не вылезает */
+    width: 120px;        /* ширина для мобильных */
+    aspect-ratio: 1 / 2; /* сохраняем пропорции */
     object-fit: cover;
     flex-shrink: 0;
   }
