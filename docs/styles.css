@@ -1,6 +1,6 @@
 :root {
   --bg: #000;
-  --fg: #ff6a35;
+  --6a35;
   --panel: rgba(10, 10, 10, 0.95);
 }
 
@@ -37,7 +37,7 @@ html, body {
   cursor: pointer;
 }
 .tab.active {
- var(--fg);
+  background: var(--fg);
   color: #000;
 }
 
@@ -69,17 +69,14 @@ html, body {
 .portrait {
   width: 120px;
   height: 120px;
-  background-color: #444;
-  background-size: cover;
+  background-color: #444  background-size: cover;
   background-position: center;
   border-radius: 8px;
 }
 
 .attrs {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 4px;
-}
+  grid-template-columns: repeat(2, 1:}
 
 .modal {
   position: fixed;
