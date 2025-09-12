@@ -1,92 +1,146 @@
-let heroes = [];
-let glossary = {};
+(async function(){
 
-// ———————— Герои ————————
-const heroesContainer = document.getElementById("heroesContainer");
+// Defaults
+const defaultHeroes = [
+  {name:"Фогги", race:"Полурослик", class:"Плут", portrait:"assets/Фогги.png", stats:{"СИЛ":"∞","ЛОВ":"∞","ВЫН":"∞","ИНТ":"∞","МДР":"∞","ХАР":"∞"}},
+  {name:"Оскар", race:"Дварф", class:"Варвар", portrait:"assets/Оскар.png", stats:{"СИЛ":"∞","ЛОВ":"∞","ВЫН":"∞","ИНТ":"∞","МДР":"∞","ХАР":"∞"}},
+  {name:"Орелл", race:"Человек", class:"Бард", portrait:"assets/Орелл.png", stats:{"СИЛ":"∞","ЛОВ":"∞","ВЫН":"∞","ИНТ":"∞","МДР":"∞","ХАР":"∞"}},
+  {name:"Рэмбэл", race:"Человек", class:"Жреч", portrait:"assets/Рэмбэл.png", stats:{"СИЛ":"∞","ЛОВ":"∞","ВЫН":"∞","ИНТ":"∞","МДР":"∞","ХАР":"∞"}}
+];
 
-function renderHeroes() {
-  heroesContainer.innerHTML = "";
-  heroes.forEach((h, idx) => {
-    const div = document.createElement("div");
-    div.className = "hero-card";
+const letters = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'.split('');
+let heroes = await fetchJSON('data/heroes.json') || defaultHeroes;
+let glossary = await fetchJSON('data/glossary.json') || letters.reduce((a,l)=>({...a,[l]:[]}),{});
+
+// Fetch helper
+async function fetchJSON(path){
+  try{ const r = await fetch(path,{cache:'no-store'}); if(r.ok) return await r.json(); } catch(e){ return null; }
+}
+
+// Tabs
+document.querySelectorAll('.tab').forEach(t=>{
+  t.onclick = ()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('tabHeroes').style.display = t.dataset.tab==='heroes'?'':'none';
+    document.getElementById('tabGlossary').style.display = t.dataset.tab==='glossary'?'':'none';
+  }
+});
+
+// --- Heroes ---
+const charsContainer = document.getElementById('charsContainer');
+
+function escapeHtml(s){ return (s||'').toString().replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+
+function renderHeroes(){
+  charsContainer.innerHTML='';
+  heroes.forEach((c,i)=>{
+    const div = document.createElement('div'); div.className='char';
     div.innerHTML = `
-      <button onclick="removeHero(${idx})">Очистить</button>
-      <input placeholder="Player" value="${h.player||''}" oninput="heroes[${idx}].player=this.value">
-      <input placeholder="Имя" value="${h.name||''}" oninput="heroes[${idx}].name=this.value">
-      <input placeholder="Раса" value="${h.race||''}" oninput="heroes[${idx}].race=this.value">
-      <input placeholder="Класс" value="${h.class||''}" oninput="heroes[${idx}].class=this.value">
-      <input placeholder="Портрет (URL)" value="${h.portrait||''}" oninput="heroes[${idx}].portrait=this.value">
-      <input placeholder="СИЛ" value="${h.STR||'∞'}" oninput="heroes[${idx}].STR=this.value">
-      <input placeholder="ЛОВ" value="${h.DEX||'∞'}" oninput="heroes[${idx}].DEX=this.value">
-      <input placeholder="ВЫН" value="${h.CON||'∞'}" oninput="heroes[${idx}].CON=this.value">
-      <input placeholder="ИНТ" value="${h.INT||'∞'}" oninput="heroes[${idx}].INT=this.value">
-      <input placeholder="МДР" value="${h.WIS||'∞'}" oninput="heroes[${idx}].WIS=this.value">
-      <input placeholder="ХАР" value="${h.CHA||'∞'}" oninput="heroes[${idx}].CHA=this.value">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <strong>Колонка ${i+1}</strong>
+        <div><button class="clearChar" data-i="${i}">Очистить</button></div>
+      </div>
+      <label>Имя</label><input class="c-name" data-i="${i}" value="${escapeHtml(c.name)}">
+      <label>Раса</label><input class="c-race" data-i="${i}" value="${escapeHtml(c.race)}">
+      <label>Класс</label><input class="c-class" data-i="${i}" value="${escapeHtml(c.class)}">
+      <label>Портрет (URL)</label><input class="c-portrait" data-i="${i}" value="${escapeHtml(c.portrait)}">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+        ${['СИЛ','ЛОВ','ВЫН','ИНТ','МДР','ХАР'].map(stat=>`
+          <div style="flex:1">
+            <label>${stat}</label>
+            <input class="c-stat" data-i="${i}" data-stat="${stat}" value="${escapeHtml(c.stats[stat])}">
+          </div>`).join('')}
+      </div>
     `;
-    heroesContainer.appendChild(div);
+    charsContainer.appendChild(div);
+  });
+  attachHeroListeners();
+}
+
+function attachHeroListeners(){
+  document.querySelectorAll('.c-name,.c-race,.c-class,.c-portrait,.c-stat').forEach(inp=>{
+    inp.oninput = ()=>{
+      const i = +inp.dataset.i;
+      if(inp.classList.contains('c-name')) heroes[i].name = inp.value;
+      if(inp.classList.contains('c-race')) heroes[i].race = inp.value;
+      if(inp.classList.contains('c-class')) heroes[i].class = inp.value;
+      if(inp.classList.contains('c-portrait')) heroes[i].portrait = inp.value;
+      if(inp.classList.contains('c-stat')) heroes[i].stats[inp.dataset.stat] = inp.value;
+    };
+  });
+  document.querySelectorAll('.clearChar').forEach(b=>{
+    b.onclick = ()=>{
+      const i = +b.dataset.i;
+      heroes[i] = {name:'', race:'', class:'', portrait:'', stats:{"СИЛ":"","ЛОВ":"","ВЫН":"","ИНТ":"","МДР":"","ХАР":""}};
+      renderHeroes();
+    };
   });
 }
 
-function addHero() {
-  heroes.push({player:'',name:'',race:'',class:'',portrait:'',STR:'∞',DEX:'∞',CON:'∞',INT:'∞',WIS:'∞',CHA:'∞'});
-  renderHeroes();
+// --- Glossary ---
+const glossLetter = document.getElementById('glossLetter');
+letters.forEach(l=>{ const o=document.createElement('option'); o.value=l; o.textContent=l; glossLetter.appendChild(o); });
+
+const glossList = document.getElementById('glossList');
+
+function renderGloss(){
+  const L = glossLetter.value || letters[0];
+  const list = glossary[L] || [];
+  glossList.innerHTML='';
+  list.forEach((it,idx)=>{
+    const div = document.createElement('div'); div.style.display='flex'; div.style.justifyContent='space-between'; div.style.padding='6px'; div.style.borderBottom='1px solid #111';
+    div.innerHTML = `<div><strong>${escapeHtml(it.term)}</strong><div class="small">${escapeHtml(it.desc)}</div></div>
+      <div style="display:flex;gap:6px">
+        <button class="editTerm" data-i="${idx}">✎</button>
+        <button class="delTerm" data-i="${idx}">🗑</button>
+      </div>`;
+    glossList.appendChild(div);
+  });
+  attachGlossListeners();
 }
 
-function removeHero(idx) {
-  heroes.splice(idx,1);
-  renderHeroes();
-}
-
-document.getElementById("addHero").onclick = addHero;
-document.getElementById("downloadHeroes").onclick = ()=>download("heroes.json", JSON.stringify(heroes,null,2));
-
-// ———————— Словарь ————————
-const glossaryContainer = document.getElementById("glossaryContainer");
-const glossaryLetterInput = document.getElementById("glossaryLetter");
-
-function renderGlossary() {
-  glossaryContainer.innerHTML = "";
-  const letter = glossaryLetterInput.value.toUpperCase();
-  if(!letter) return;
-  if(!glossary[letter]) glossary[letter]=[];
-  glossary[letter].forEach((term, idx)=>{
-    const div = document.createElement("div");
-    div.className = "glossary-row";
-    div.innerHTML = `
-      <input placeholder="Термин" value="${term.term}" oninput="glossary['${letter}'][${idx}].term=this.value">
-      <input placeholder="Описание" value="${term.desc}" oninput="glossary['${letter}'][${idx}].desc=this.value">
-      <button onclick="removeTerm('${letter}',${idx})">Удалить</button>
-    `;
-    glossaryContainer.appendChild(div);
+function attachGlossListeners(){
+  document.querySelectorAll('.delTerm').forEach(b=>{
+    b.onclick = ()=>{
+      const i=+b.dataset.i, L=glossLetter.value;
+      glossary[L].splice(i,1); renderGloss();
+    }
+  });
+  document.querySelectorAll('.editTerm').forEach(b=>{
+    b.onclick = ()=>{
+      const i=+b.dataset.i,L=glossLetter.value;
+      const it=glossary[L][i];
+      const t=prompt('Термин', it.term); if(t===null) return;
+      const d=prompt('Описание', it.desc); if(d===null) return;
+      it.term=t; it.desc=d; renderGloss();
+    }
   });
 }
 
-function addTerm() {
-  const letter = glossaryLetterInput.value.toUpperCase();
-  if(!letter) return alert("Введите букву!");
-  if(!glossary[letter]) glossary[letter]=[];
-  glossary[letter].push({term:'',desc:''});
-  renderGlossary();
-}
+document.getElementById('addTerm').onclick = ()=>{
+  const t=document.getElementById('newTerm').value.trim();
+  const d=document.getElementById('newDesc').value.trim();
+  if(!t) return alert('Введите термин');
+  const L = glossLetter.value;
+  if(!glossary[L]) glossary[L]=[];
+  glossary[L].push({term:t, desc:d});
+  document.getElementById('newTerm').value=''; document.getElementById('newDesc').value='';
+  renderGloss();
+};
 
-function removeTerm(letter, idx) {
-  glossary[letter].splice(idx,1);
-  renderGlossary();
-}
+glossLetter.onchange=renderGloss;
 
-glossaryLetterInput.oninput = renderGlossary;
-document.getElementById("addTerm").onclick = addTerm;
-document.getElementById("downloadGlossary").onclick = ()=>download("glossary.json", JSON.stringify(glossary,null,2));
+// --- Buttons ---
+document.getElementById('downloadHeroes').onclick = ()=>download('heroes.json', heroes);
+document.getElementById('downloadGloss').onclick = ()=>download('glossary.json', glossary);
+document.getElementById('loadSampleHeroes').onclick = async ()=>{
+  const r=await fetch('data/heroes.json',{cache:'no-store'});
+  if(r.ok){ heroes = await r.json(); renderHeroes(); } else alert('Не найден data.json');
+};
 
-// ———————— Общая функция ————————
-function download(name, text) {
-  const blob = new Blob([text], {type:"application/json"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = name;
-  a.click();
-}
+// Initial render
+renderHeroes();
+renderGloss();
 
-// ———————— Загрузка существующих данных ————————
-fetch("data/heroes.json").then(r=>r.json()).then(d=>{ heroes=d; renderHeroes(); });
-fetch("data/glossary.json").then(r=>r.json()).then(d=>{ glossary=d; });
+})();
