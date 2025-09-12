@@ -60,35 +60,45 @@ body {
   border-radius: 4px;
   background-color: #1a1a1a;
 
-  /* карточка подстраивается под контент */
   width: auto;
   max-width: none;
+  flex-direction: column; /* имя сверху, характеристики ниже */
+  align-items: center;
+}
+
+.hero-name {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-align: center;
 }
 
 .portrait {
-  /* желаемый размер */
   width: 200px;
   height: 400px;
   background-size: cover;
   background-position: center;
   border-radius: 6px;
-
-  /* чтобы текст не сжимал картинку */
   flex-shrink: 0;
-
-  /* адаптивность */
   max-width: 200px;
   max-height: 400px;
+  margin-bottom: 10px;
 }
 
 /* Блок характеристик героя */
 .attrs {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 18px; /* фиксированный размер шрифта */
+}
 
-  /* увеличиваем шрифт в 2 раза и делаем жирным */
-  font-size: 2em;
+.attrs div {
+  line-height: 1.4;
+}
+
+/* жирность для ключевых слов */
+.attrs b {
   font-weight: bold;
 }
 
@@ -152,7 +162,6 @@ input {
   display: none;
 }
 
-/* адаптивность для узких экранов */
 @media (max-width: 600px) {
   .hero-card {
     flex-direction: column;
