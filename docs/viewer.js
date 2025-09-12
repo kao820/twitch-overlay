@@ -53,7 +53,7 @@ fetch("data/heroes.json")
 
 function showHero(h) {
   heroCard.innerHTML = `
-    <div class="hero-left">
+    <div class="hero-center">
       <div class="hero-name">${h.name}</div>
       <div class="portrait" style="background-image:url('${h.portrait}')"></div>
     </div>
@@ -123,3 +123,4 @@ function openTerm(t) {
   termDesc.textContent = t.desc;
   termModal.classList.remove("hidden");
 }
+});
