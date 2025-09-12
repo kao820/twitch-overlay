@@ -59,14 +59,26 @@ body {
   padding: 10px;
   border-radius: 4px;
   background-color: #1a1a1a;
+
+  /* карточка подстраивается под контент */
+  width: auto;
+  max-width: none;
 }
 
 .portrait {
-  width: 100px;
-  height: 100px;
+  /* желаемый размер */
+  width: 200px;
+  height: 400px;
   background-size: cover;
   background-position: center;
   border-radius: 6px;
+
+  /* чтобы текст не сжимал картинку */
+  flex-shrink: 0;
+
+  /* адаптивность */
+  max-width: 200px;
+  max-height: 400px;
 }
 
 .attrs {
@@ -133,4 +145,19 @@ input {
 
 .hidden {
   display: none;
+}
+
+/* адаптивность для узких экранов */
+@media (max-width: 600px) {
+  .hero-card {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .portrait {
+    width: 100%;
+    height: auto;
+    max-width: 200px;
+    max-height: 400px;
+  }
 }
