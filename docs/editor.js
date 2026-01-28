@@ -32,15 +32,20 @@ async function loadJSON(path){
 }
 
 // --- Инициализация ---
-(async function init(){
+// Загружаем данные и настраиваем интерфейс после полной загрузки DOM.
+document.addEventListener('DOMContentLoaded', async () => {
+  // Загружаем данные героев и словаря
   heroes = await loadJSON('data/heroes.json') || [];
   glossary = await loadJSON('data/glossary.json') || {};
-  // Не фильтруем по hp: отображаем все карточки героев, которые уже заведены.
+  // Отрисовываем интерфейс
   renderHeroes();
   populateGlossLetters();
   renderGloss();
+  // Применяем выбранную тему
   applyTheme();
-})();
+  // Назначаем обработчики событий
+  setupEventHandlers();
+});
 
 // --- Работа с темой (светлая/тёмная) ---
 function applyTheme() {
@@ -54,29 +59,89 @@ function applyTheme() {
   }
 }
 
-if (themeToggleBtn) {
-  themeToggleBtn.onclick = () => {
-    const isLight = document.body.classList.contains('light-theme');
-    if (isLight) {
-      document.body.classList.remove('light-theme');
-      themeToggleBtn.textContent = '🌙';
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.body.classList.add('light-theme');
-      themeToggleBtn.textContent = '☀️';
-      localStorage.setItem('theme', 'light');
-    }
-  };
+// --- Назначение обработчиков событий ---
+function setupEventHandlers() {
+  // Переключатель темы
+  if (themeToggleBtn) {
+    themeToggleBtn.onclick = () => {
+      const isLight = document.body.classList.contains('light-theme');
+      if (isLight) {
+        document.body.classList.remove('light-theme');
+        themeToggleBtn.textContent = '🌙';
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.body.classList.add('light-theme');
+        themeToggleBtn.textContent = '☀️';
+        localStorage.setItem('theme', 'light');
+      }
+    };
+  }
+  // Добавление термина
+  const addTermBtn = document.getElementById('addTerm');
+  if (addTermBtn) {
+    addTermBtn.onclick = () => {
+      const t = document.getElementById('newTerm').value.trim();
+      const d = document.getElementById('newDesc').value.trim();
+      if (!t) return alert('Введите термин');
+      const L = glossLetter.value;
+      if (!glossary[L]) glossary[L] = [];
+      glossary[L].push({ term: t, desc: d });
+      sortGlossaryArray(glossary[L]);
+      document.getElementById('newTerm').value = '';
+      document.getElementById('newDesc').value = '';
+      renderGloss();
+    };
+  }
+  // Скачивание списка героев
+  if (downloadHeroesBtn) {
+    downloadHeroesBtn.onclick = () => downloadJSON('heroes.json', heroes);
+  }
+  // Кнопка добавления героя
+  const addHeroBtn = document.getElementById('addHero');
+  if (addHeroBtn) {
+    addHeroBtn.onclick = () => {
+      heroes.push({ name: '', race: '', class: '', portrait: '', stats: {}, status: 'alive' });
+      renderHeroes();
+    };
+  }
+  // Скачивание словаря по алфавиту
+  if (downloadGlossBtn) {
+    downloadGlossBtn.onclick = () => {
+      const sortedGlossary = {};
+      letters.forEach(L => {
+      if (glossary[L] && glossary[L].length) {
+        const arr = glossary[L].slice();
+        sortGlossaryArray(arr);
+        sortedGlossary[L] = arr;
+      }
+      });
+      downloadJSON('glossary.json', sortedGlossary);
+    };
+  }
+  // Переключение вкладок
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const target = tab.dataset.tab;
+      document.getElementById('tabHeroes').style.display = (target === 'heroes') ? '' : 'none';
+      document.getElementById('tabGlossary').style.display = (target === 'glossary') ? '' : 'none';
+    });
+  });
+  // Очистка всех полей (создание 4 пустых карточек)
+  if (loadSampleHeroesBtn) {
+    loadSampleHeroesBtn.onclick = () => {
+      heroes = [];
+      for (let i = 0; i < 4; i++) {
+        heroes.push({ name: '', race: '', class: '', portrait: '', stats: {}, status: 'alive' });
+      }
+      renderHeroes();
+    };
+  }
 }
 
 // --- Вспомогательные функции ---
-function escapeHtml(s){
-  return (s||'').toString()
-    .replaceAll('&','&amp;')
-    .replaceAll('<','&lt;')
-    .replaceAll('>','&gt;')
-    .replaceAll('"','&quot;');
-}
+function escapeHtml(s){ return (s||'').toString().replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'); }
 
 function downloadJSON(name, obj){
   const blob = new Blob([JSON.stringify(obj,null,2)], {type:'application/json'});
@@ -107,10 +172,10 @@ function sortGlossaryArray(arr){
 // --- Герои ---
 function renderHeroes(){
   charsContainer.innerHTML = '';
-  // Выводим всех заведённых героев и минимум четыре пустые карточки.
+  // Отобразим всех активных героев и хотя бы четыре пустые карточки.
   const count = Math.max(4, heroes.length);
   for (let i = 0; i < count; i++) {
-    const c = heroes[i] || { name:'', race:'', class:'', portrait:'', stats:{}, status:'alive' };
+    const c = heroes[i] || { name: '', race: '', class: '', portrait: '', stats: {}, status: 'alive' };
     const div = document.createElement('div'); div.className='char';
     div.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center">
@@ -130,7 +195,7 @@ function renderHeroes(){
       </div>
       <label>Статус</label>
       <div class="status-buttons" data-i="${i}">
-        ${statusOptions.map(opt => \`<button class="status-btn\${c.status===opt.value?' active':''}" data-i="\${i}" data-status="\${opt.value}">\${opt.label}</button>\`).join('')}
+        ${statusOptions.map(opt => `<button class="status-btn${c.status===opt.value?' active':''}" data-i="${i}" data-status="${opt.value}">${opt.label}</button>`).join('')}
       </div>
     `;
     charsContainer.appendChild(div);
@@ -143,11 +208,11 @@ function attachHeroListeners(){
     inp.oninput = ()=>{
       const i = +inp.dataset.i;
       if(!heroes[i]) heroes[i] = { name:'', race:'', class:'', portrait:'', stats:{}, status:'alive' };
-      if(inp.classList.contains('c-name'))     heroes[i].name = inp.value;
-      if(inp.classList.contains('c-race'))     heroes[i].race = inp.value;
-      if(inp.classList.contains('c-class'))    heroes[i].class = inp.value;
+      if(inp.classList.contains('c-name')) heroes[i].name = inp.value;
+      if(inp.classList.contains('c-race')) heroes[i].race = inp.value;
+      if(inp.classList.contains('c-class')) heroes[i].class = inp.value;
       if(inp.classList.contains('c-portrait')) heroes[i].portrait = inp.value;
-      if(inp.classList.contains('c-stat'))     heroes[i].stats[inp.dataset.stat] = inp.value;
+      if(inp.classList.contains('c-stat')) heroes[i].stats[inp.dataset.stat] = inp.value;
     };
   });
   document.querySelectorAll('.clearChar').forEach(b=>{
@@ -159,8 +224,8 @@ function attachHeroListeners(){
   });
 
   // Обработчики статуса
-  document.querySelectorAll('.status-btn').forEach(btn=>{
-    btn.onclick = ()=>{
+  document.querySelectorAll('.status-btn').forEach(btn => {
+    btn.onclick = () => {
       const i = +btn.dataset.i;
       const status = btn.dataset.status;
       if(!heroes[i]) heroes[i] = { name:'', race:'', class:'', portrait:'', stats:{}, status:'alive' };
@@ -188,7 +253,11 @@ function renderGloss(){
   glossList.innerHTML = '';
   list.forEach((it, idx)=>{
     const div = document.createElement('div');
-    div.innerHTML = \`<div><strong>\${escapeHtml(it.term)}</strong><div class="small">\${escapeHtml(it.desc)}</div></div>\n      <div style="display:flex;gap:6px">\n        <button class="editTerm" data-i="\${idx}">✎</button>\n        <button class="delTerm" data-i="\${idx}">🗑</button>\n      </div>\`;
+    div.innerHTML = `<div><strong>${escapeHtml(it.term)}</strong><div class="small">${escapeHtml(it.desc)}</div></div>
+      <div style="display:flex;gap:6px">
+        <button class="editTerm" data-i="${idx}">✎</button>
+        <button class="delTerm" data-i="${idx}">🗑</button>
+      </div>`;
     glossList.appendChild(div);
   });
   attachGlossListeners();
@@ -206,8 +275,8 @@ function attachGlossListeners(){
   });
   document.querySelectorAll('.editTerm').forEach(b=>{
     b.onclick = ()=>{
-      const i  = +b.dataset.i;
-      const L  = glossLetter.value;
+      const i = +b.dataset.i;
+      const L = glossLetter.value;
       const it = glossary[L][i];
       const t = prompt('Термин', it.term); if(t===null) return;
       const d = prompt('Описание', it.desc); if(d===null) return;
@@ -218,61 +287,12 @@ function attachGlossListeners(){
   });
 }
 
-// --- Кнопки ---
-document.getElementById('addTerm').onclick = ()=>{
-  const t = document.getElementById('newTerm').value.trim();
-  const d = document.getElementById('newDesc').value.trim();
-  if(!t) return alert('Введите термин');
-  const L = glossLetter.value;
-  if(!glossary[L]) glossary[L] = [];
-  glossary[L].push({term:t, desc:d});
-  sortGlossaryArray(glossary[L]);
-  document.getElementById('newTerm').value='';
-  document.getElementById('newDesc').value='';
-  renderGloss();
-};
-
-downloadHeroesBtn.onclick = () => downloadJSON('heroes.json', heroes);
-
-// Кнопка добавления персонажа
-const addHeroBtn = document.getElementById('addHero');
-if (addHeroBtn) {
-  addHeroBtn.onclick = () => {
-    heroes.push({ name:'', race:'', class:'', portrait:'', stats:{}, status:'alive' });
-    renderHeroes();
-  };
-}
-
-// Скачивание глоссария по алфавиту
-downloadGlossBtn.onclick = () => {
-  const sortedGlossary = {};
-  letters.forEach(L=>{
-    if(glossary[L] && glossary[L].length) {
-      const arr = glossary[L].slice();
-      sortGlossaryArray(arr);
-      sortedGlossary[L] = arr;
-    }
-  });
-  downloadJSON('glossary.json', sortedGlossary);
-};
-
-// --- Вкладки ---
-document.querySelectorAll('.tab').forEach(tab=>{
-  tab.addEventListener('click',()=>{
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    tab.classList.add('active');
-    const target = tab.dataset.tab;
-    document.getElementById('tabHeroes').style.display   = (target==='heroes') ? '' : 'none';
-    document.getElementById('tabGlossary').style.display = (target==='glossary') ? '' : 'none';
-  });
-});
-
-// --- Дополнительная кнопка очистки ---
+// --- Дополнительная кнопка очистки (loadSampleHeroes) ---
 if (loadSampleHeroesBtn) {
   loadSampleHeroesBtn.onclick = () => {
     heroes = [];
-    for (let i=0; i<4; i++) {
-      heroes.push({ name:'', race:'', class:'', portrait:'', stats:{}, status:'alive' });
+    for (let i = 0; i < 4; i++) {
+      heroes.push({name:'', race:'', class:'', portrait:'', stats:{}});
     }
     renderHeroes();
   };
