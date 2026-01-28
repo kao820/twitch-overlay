@@ -183,6 +183,33 @@ button:hover {
   margin-top: 8px;
 }
 
+/* Status buttons for hero status */
+.status-buttons {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.status-btn {
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--tab-bg);
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.status-btn:hover {
+  background: var(--border-color);
+}
+
+.status-btn.active {
+  background: var(--accent-color);
+  color: var(--tab-active-color);
+}
+
 /* Glossary layout */
 .glossary-container {
   display: flex;
