@@ -328,3 +328,23 @@ body.light-theme {
   flex: 1 1 100%;
   margin-top: 0;
 }
+
+/* Responsive adjustments for small screens. When the viewport width is less
+   than or equal to 600px (approximate mobile portrait), the overlay panel
+   occupies the full width and the detail panel overlays the entire screen
+   instead of being anchored to the right. This prevents detail content from
+   rendering off-screen on mobile devices. */
+@media (max-width: 600px) {
+  .overlay-panel {
+    width: 100%;
+    border-right: none;
+  }
+  .detail-panel {
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    border-left: none;
+    z-index: 600;
+  }
+}
