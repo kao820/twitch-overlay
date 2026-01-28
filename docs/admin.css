@@ -8,31 +8,37 @@
  * section.
  */
 
-/* Default (dark) theme variables */
+/*
+ * Основная цветовая схема приближена к интерфейсу ChatGPT: глубокие
+ * тёмно‑серые оттенки для тёмной темы и мягкие светлые тона для светлой.
+ * Акцентным цветом выбран фирменный зелёный ChatGPT (#10a37f).
+ */
+
+/* Тёмная тема (по умолчанию) */
 :root {
-  --bg-color: #070707;
-  --card-bg: #0f0f0f;
-  --text-color: #eeeeee;
-  --accent-color: #f2c96d;
-  --input-bg: #090909;
-  --border-color: #222222;
-  --tab-bg: #111111;
+  --bg-color:    #343541; /* общий фон */
+  --card-bg:     #444654; /* фон карточек */
+  --text-color:  #ececf1; /* основной цвет текста */
+  --accent-color:#10a37f; /* акцентный зелёный */
+  --input-bg:    #3e4151; /* фон инпутов и текстовых полей */
+  --border-color:#565b78; /* границы и разделители */
+  --tab-bg:      #3c3f54; /* фон неактивных вкладок */
   --tab-active-bg: var(--accent-color);
-  --tab-active-color: #111111;
+  --tab-active-color: #ffffff;
   --control-gap: 12px;
 }
 
-/* Light theme overrides */
+/* Светлая тема */
 body.light-theme {
-  --bg-color: #f9f9f9;
-  --card-bg: #ffffff;
-  --text-color: #333333;
-  --accent-color: #f2c96d;
-  --input-bg: #f2f2f2;
-  --border-color: #cccccc;
-  --tab-bg: #e6e6e6;
+  --bg-color:    #f7f7f8; /* общий фон */
+  --card-bg:     #ffffff; /* фон карточек */
+  --text-color:  #202123; /* основной текст */
+  --accent-color:#10a37f; /* зелёный акцент */
+  --input-bg:    #ededed; /* фон инпутов */
+  --border-color:#dadde5; /* границы и разделители */
+  --tab-bg:      #e8e8f0; /* фон неактивных вкладок */
   --tab-active-bg: var(--accent-color);
-  --tab-active-color: #111111;
+  --tab-active-color: #ffffff;
 }
 
 /* Global page styles */
