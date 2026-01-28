@@ -1,188 +1,215 @@
+/*
+ * Stylesheet for the public overlay page. The layout and color palette
+ * are inspired by the ChatGPT interface: deep greys and subtle whites
+ * for the dark theme with a vibrant green accent. This file defines
+ * variables for ease of customization and styles the overlay panel,
+ * hero columns, glossary list and modal popups.
+ */
+
+/* Base variables for the dark theme */
 :root {
-  --panel-bg: rgba(6, 5, 1, 0.95);
-  --text-color: #ff6a35;
-  --btn-color: #ff6a35;
-  --scale-factor: 1.1;
+  --bg-color:      #343541; /* page background */
+  --panel-bg:      #444654; /* side panel and modals */
+  --card-bg:       #3c3f54; /* button background */
+  --hover-bg:      #565b78; /* hover state for buttons */
+  --text-color:    #ececf1; /* primary text */
+  --accent-color:  #10a37f; /* ChatGPT green */
+  --border-color:  #565b78; /* borders */
 }
 
-/* Базовые размеры */
-html { font-size: calc(16px * var(--scale-factor)); }
-
+/* Root styles */
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  padding: 0;
+  font-family: sans-serif;
+  background-color: var(--bg-color);
   color: var(--text-color);
-  background-color: black;
-  background-size: cover;
-  background-position: center;
+  overflow: hidden; /* prevent body scroll; panel handles its own */
 }
 
-/* Панель / header / табы */
-.overlay-panel { padding: 12px; }
-.overlay-header { display: flex; gap: 10px; margin-bottom: 10px; }
+/* Overlay panel anchored to the left */
+.overlay-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 360px;
+  height: 100vh;
+  background-color: var(--panel-bg);
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-color);
+}
+
+/* Header with tabs */
+.overlay-header {
+  display: flex;
+  justify-content: space-around;
+  padding: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
 
 .tab {
-  border: 1px solid var(--text-color);
-  background: transparent;
+  flex: 1;
+  padding: 6px 8px;
+  background: var(--card-bg);
   color: var(--text-color);
-  padding: 6px 12px;
-  border-radius: 4px;
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 1rem;
-}
-.tab.active { background: var(--text-color); color: black; }
-
-.section { padding: 10px; }
-
-/* Список героев */
-.heroes-list button {
-  display: block;
-  width: 100%;
-  margin-bottom: 6px;
-  background: #111;
-  color: var(--text-color);
-  border: 1px solid #333;
-  border-radius: 4px;
-  padding: 6px;
-  font-size: 1rem;
+  transition: background 0.15s;
+  margin: 0 4px;
 }
 
-/* Карточка героя */
-.hero-card {
+.tab.active {
+  background: var(--accent-color);
+  color: #fff;
+}
+
+.tab:not(.active):hover {
+  background: var(--hover-bg);
+}
+
+/* Sections */
+.section {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.hidden {
+  display: none;
+}
+
+/* Heroes columns */
+.heroes-columns {
   display: flex;
   gap: 12px;
-  margin-top: 15px;
-  border: 1px solid #333;
-  padding: 10px;
-  border-radius: 4px;
-  background-color: #1a1a1a;
-  width: auto;
-  max-width: 100%;
-  box-sizing: border-box;
-  align-items: flex-start; /* портрет слева, характеристики справа */
+  justify-content: stretch;
 }
 
-/* ---------- ПОРТРЕТЫ ---------- */
-.portrait {
-  width: 200px;          /* фиксированная ширина */
-  aspect-ratio: 1 / 2;   /* сохраняем пропорции */
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  border-radius: 6px;
-  flex-shrink: 0;
+.status-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-img.portrait {
-  width: 200px;
-  aspect-ratio: 1 / 2;   /* сохраняем пропорции */
-  object-fit: cover;
-  border-radius: 6px;
-  flex-shrink: 0;
-  display: block;
+.status-column h4 {
+  margin: 4px 0 8px;
+  font-size: 0.95rem;
+  color: var(--accent-color);
+  text-align: center;
 }
 
-/* attributes блок (характеристики) */
-.attrs {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
-  font-size: 1rem;
+.status-column button {
+  width: 100%;
+  padding: 6px;
+  margin-bottom: 6px;
+  background: var(--card-bg);
   color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
 }
 
-/* Модальное окно */
+.status-column button:hover {
+  background: var(--hover-bg);
+}
+
+/* Glossary list */
+#searchInput {
+  width: 100%;
+  padding: 6px 8px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--text-color);
+  box-sizing: border-box;
+}
+
+.alphabet {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.alphabet button {
+  padding: 4px 6px;
+  background: var(--card-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.alphabet button:hover {
+  background: var(--hover-bg);
+}
+
+.terms-list div {
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.terms-list div:hover {
+  background: var(--card-bg);
+}
+
+/* Modal popups */
 .modal {
   position: fixed;
-  z-index: 999;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   background: var(--panel-bg);
-  padding: 18px;
-  color: var(--text-color);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  width: min(92vw, 420px);
-  max-height: 90vh;
-  overflow-y: auto;
-  box-sizing: border-box;
+  color: var(--text-color);
+  padding: 16px;
+  width: 320px;
+  max-width: 90%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
 }
 
-.modal.hidden { display: none; }
+.modal.hidden {
+  display: none;
+}
+
+.modal h3 {
+  margin: 0 0 8px;
+  font-size: 1.2rem;
+}
+
+.hero-stats {
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.attrs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+  margin-top: 6px;
+}
 
 .close-btn {
-  float: right;
-  cursor: pointer;
-  border: none;
-  background: none;
-  font-size: 1.2rem;
-  color: var(--text-color);
-}
-
-/* Поля ввода */
-input {
-  width: 100%;
-  margin-bottom: 8px;
-  background: #111;
-  border: 1px solid #333;
-  padding: 6px;
-  color: var(--text-color);
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-
-/* Алфавит */
-.alphabet {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 8px 0;
-}
-.alphabet button {
-  padding: 6px 8px;
-  background: #222;
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: transparent;
   color: var(--text-color);
   border: none;
-  border-radius: 4px;
+  font-size: 1.1rem;
   cursor: pointer;
-  flex: 0 0 auto;
-  font-size: 0.95rem;
 }
 
-/* Список терминов */
-.terms-list div {
-  padding: 8px;
-  border-bottom: 1px solid #333;
-  cursor: pointer;
-  box-sizing: border-box;
-}
-
-/* Утилитарные */
-.hidden { display: none; }
-
-/* ----------------- Адаптивные правила ----------------- */
-@media (max-width: 700px) {
-  .hero-card {
-    flex-direction: row; /* портрет слева, характеристики справа */
-    align-items: flex-start;
-  }
-
-  .portrait,
-  img.portrait {
-    width: 120px;        /* ширина для мобильных */
-    aspect-ratio: 1 / 2; /* сохраняем пропорции */
-    object-fit: cover;
-    flex-shrink: 0;
-  }
-
-  .modal {
-    width: 94vw;
-    max-width: 94vw;
-    padding: 14px;
-  }
-
-  .alphabet button {
-    padding: 8px 10px;
-    font-size: 1rem;
-  }
+.close-btn:hover {
+  color: var(--accent-color);
 }
