@@ -1,47 +1,70 @@
 // Elements
-const heroesTab = document.getElementById("heroesTab");
-const glossaryTab = document.getElementById("glossaryTab");
-const heroesSection = document.getElementById("heroesSection");
-const glossarySection = document.getElementById("glossarySection");
-const heroesList = document.getElementById("heroesList");
+const heroesTab      = document.getElementById("heroesTab");
+const glossaryTab    = document.getElementById("glossaryTab");
+const heroesSection  = document.getElementById("heroesSection");
+const glossarySection= document.getElementById("glossarySection");
+const heroesList     = document.getElementById("heroesList");
 
+// Detail panel elements (for both hero and glossary)
 const detailPanel  = document.getElementById("detailPanel");
 const detailHeader = document.getElementById("detailHeader");
 const detailBody   = document.getElementById("detailBody");
 const detailClose  = document.getElementById("detailClose");
+// Theme toggle element
+const themeToggle  = document.getElementById("themeToggle");
 
-const alphabet = document.getElementById("alphabet");
+const alphabet  = document.getElementById("alphabet");
 const termsList = document.getElementById("termsList");
 const searchInput = document.getElementById("searchInput");
 
 // Tab switching
 heroesTab.onclick   = () => setTab("heroes");
 glossaryTab.onclick = () => setTab("glossary");
+// Close detail panel
 detailClose.onclick = () => detailPanel.classList.add("hidden");
+
+// Apply saved theme and set up toggle
+applyTheme();
+if (themeToggle) {
+  themeToggle.onclick = () => {
+    const isLight = document.body.classList.contains("light-theme");
+    if (isLight) {
+      document.body.classList.remove("light-theme");
+      themeToggle.textContent = "🌙";
+      localStorage.setItem("viewerTheme", "dark");
+    } else {
+      document.body.classList.add("light-theme");
+      themeToggle.textContent = "☀️";
+      localStorage.setItem("viewerTheme", "light");
+    }
+  };
+}
 
 function setTab(tab) {
   const isHeroes = tab === "heroes";
-  heroesTab.classList.toggle("active", isHeroes);
+  heroesTab.classList.toggle("active",  isHeroes);
   glossaryTab.classList.toggle("active", !isHeroes);
   heroesSection.classList.toggle("hidden", !isHeroes);
-  glossarySection.classList.toggle("hidden", isHeroes);
+  glossarySection.classList.toggle("hidden",  isHeroes);
 }
 
-// Load settings (colours/background)
+// Load settings (colors/background) — overrides some CSS variables if data/settings.json exists
 fetch("data/settings.json")
   .then((res) => res.json())
   .then((st) => {
     const root = document.documentElement.style;
     if (st.textColor) root.setProperty("--text-color", st.textColor);
-    if (st.btnColor)  root.setProperty("--btn-color", st.btnColor);
-    if (st.panelBg)   root.setProperty("--panel-bg", st.panelBg);
-    // ignore background image to avoid “fur” texture
+    if (st.btnColor)  root.setProperty("--btn-color",  st.btnColor);
+    if (st.panelBg)   root.setProperty("--panel-bg",   st.panelBg);
+    // игнорируем фоновое изображение, чтобы убрать «шкуру»
+    // if (st.background) document.body.style.backgroundImage = `url('${st.background}')`;
   });
 
 // Load heroes and render in columns by status
 fetch("data/heroes.json")
   .then((res) => res.json())
   .then((data) => {
+    // group by status; default to alive if no status property
     const groups = { alive: [], dead: [], unknown: [] };
     data.forEach((hero) => {
       const status = hero.status || "alive";
@@ -62,16 +85,15 @@ function renderHeroes(groups) {
     h.textContent = labels[status];
     col.appendChild(h);
     const listDiv = document.createElement("div");
-    const sorted = (groups[status] || [])
-      .slice()
-      .sort((a, b) =>
-        (a.name || "").toLocaleUpperCase().localeCompare(
-          (b.name || "").toLocaleUpperCase(),
-          "ru-RU"
-        )
-      );
+    // Сортируем героев в каждой колонке по алфавиту (без учёта регистра)
+    const sorted = (groups[status] || []).slice().sort((a, b) => {
+      const nameA = (a.name || '').toLocaleUpperCase();
+      const nameB = (b.name || '').toLocaleUpperCase();
+      return nameA.localeCompare(nameB, 'ru-RU');
+    });
     sorted.forEach((hero) => {
       const btn = document.createElement("button");
+      // Кнопка отображает только имя героя. Портрет будет показан в панели подробностей.
       btn.textContent = hero.name;
       btn.onclick = () => showHero(hero);
       listDiv.appendChild(btn);
@@ -82,6 +104,7 @@ function renderHeroes(groups) {
 }
 
 function showHero(h) {
+  // Заполняем заголовок и содержимое панели подробностей
   detailHeader.textContent = h.name;
   detailBody.innerHTML = `
     <img src="${h.portrait}" alt="${h.name}" class="hero-portrait">
@@ -142,7 +165,20 @@ function renderGlossaryList(filter) {
 searchInput.oninput = () => renderGlossaryList();
 
 function openTerm(t) {
+  // Заполняем панель подробностей для термина
   detailHeader.textContent = t.term;
   detailBody.innerHTML = `<p>${t.desc}</p>`;
   detailPanel.classList.remove("hidden");
+}
+
+// --- Темы ---
+function applyTheme() {
+  const saved = localStorage.getItem("viewerTheme") || "dark";
+  if (saved === "light") {
+    document.body.classList.add("light-theme");
+    if (themeToggle) themeToggle.textContent = "☀️";
+  } else {
+    document.body.classList.remove("light-theme");
+    if (themeToggle) themeToggle.textContent = "🌙";
+  }
 }
