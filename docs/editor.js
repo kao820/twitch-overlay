@@ -1,35 +1,41 @@
 // --- Элементы DOM ---
 const charsContainer = document.getElementById('charsContainer');
-const glossLetter    = document.getElementById('glossLetter');
-const glossList      = document.getElementById('glossList');
+const glossLetter = document.getElementById('glossLetter');
+const glossList = document.getElementById('glossList');
 const downloadHeroesBtn = document.getElementById('downloadHeroes');
-const downloadGlossBtn  = document.getElementById('downloadGloss');
-const themeToggleBtn    = document.getElementById('themeToggle');
+const downloadGlossBtn = document.getElementById('downloadGloss');
+const themeToggleBtn = document.getElementById('themeToggle');
 const loadSampleHeroesBtn = document.getElementById('loadSampleHeroes');
 
-// Порядок полей характеристик
+// Статистика персонажей (порядок полей)
 const statsFields = ['СИЛ','ЛОВ','ВЫН','ИНТ','МУД','ХАР'];
 
+// Возможные статусы персонажей
+const statusOptions = [
+  { value: 'alive', label: 'Жив' },
+  { value: 'dead', label: 'Мёртв' },
+  { value: 'unknown', label: 'Неизвестно' }
+];
+
 // --- Данные ---
-let heroes  = [];
+let heroes = [];
 let glossary = {};
 const letters = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'.split('');
 
 // --- Загрузка JSON ---
 async function loadJSON(path){
-  try {
-    const r = await fetch(path, { cache: 'no-store' });
+  try{
+    const r = await fetch(path, {cache:'no-store'});
     if(r.ok) return await r.json();
-  } catch(e) {}
+  }catch(e){}
   return null;
 }
 
 // --- Инициализация ---
 (async function init(){
-  heroes   = await loadJSON('data/heroes.json')   || [];
+  heroes = await loadJSON('data/heroes.json') || [];
   glossary = await loadJSON('data/glossary.json') || {};
-  // Не фильтруем героев: отображаем все заведённые карточки.
-  // heroes = heroes.filter(h => h.name && h.name.trim() !== '');
+  // Не фильтруем по hp: отображаем все карточки героев, которые уже заведены.
   renderHeroes();
   populateGlossLetters();
   renderGloss();
@@ -64,8 +70,8 @@ if (themeToggleBtn) {
 }
 
 // --- Вспомогательные функции ---
-function escapeHtml(s){ 
-  return (s || '').toString()
+function escapeHtml(s){
+  return (s||'').toString()
     .replaceAll('&','&amp;')
     .replaceAll('<','&lt;')
     .replaceAll('>','&gt;')
@@ -73,7 +79,7 @@ function escapeHtml(s){
 }
 
 function downloadJSON(name, obj){
-  const blob = new Blob([JSON.stringify(obj,null,2)], { type:'application/json' });
+  const blob = new Blob([JSON.stringify(obj,null,2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = name;
@@ -83,7 +89,7 @@ function downloadJSON(name, obj){
 
 // --- Сортировка глоссария ---
 function sortGlossaryArray(arr){
-  arr.sort((a,b) => {
+  arr.sort((a,b)=>{
     const termA = a.term.toUpperCase();
     const termB = b.term.toUpperCase();
     const len = Math.max(termA.length, termB.length);
@@ -92,7 +98,7 @@ function sortGlossaryArray(arr){
       const chB = termB[i] || '';
       const idxA = letters.indexOf(chA);
       const idxB = letters.indexOf(chB);
-      if(idxA!==idxB) return idxA - idxB;
+      if(idxA!==idxB) return idxA-idxB;
     }
     return 0;
   });
@@ -101,12 +107,11 @@ function sortGlossaryArray(arr){
 // --- Герои ---
 function renderHeroes(){
   charsContainer.innerHTML = '';
-  // Выводим всех заведённых героев, но минимум четыре карточки.
+  // Выводим всех заведённых героев и минимум четыре пустые карточки.
   const count = Math.max(4, heroes.length);
   for (let i = 0; i < count; i++) {
-    const c = heroes[i] || { name:'', race:'', class:'', portrait:'', stats:{} };
-    const div = document.createElement('div');
-    div.className = 'char';
+    const c = heroes[i] || { name:'', race:'', class:'', portrait:'', stats:{}, status:'alive' };
+    const div = document.createElement('div'); div.className='char';
     div.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center">
         <strong>Персонаж ${i+1}</strong>
@@ -117,11 +122,15 @@ function renderHeroes(){
       <label>Класс</label><input class="c-class" data-i="${i}" value="${escapeHtml(c.class)}">
       <label>Портрет (URL)</label><input class="c-portrait" data-i="${i}" value="${escapeHtml(c.portrait)}">
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
-        ${statsFields.map(stat => `
+        ${statsFields.map(stat=>`
           <div style="flex:1">
             <label>${stat}</label>
-            <input class="c-stat" data-i="${i}" data-stat="${stat}" value="${escapeHtml(c.stats[stat] || '')}">
+            <input class="c-stat" data-i="${i}" data-stat="${stat}" value="${escapeHtml(c.stats[stat]||'')}">
           </div>`).join('')}
+      </div>
+      <label>Статус</label>
+      <div class="status-buttons" data-i="${i}">
+        ${statusOptions.map(opt => \`<button class="status-btn\${c.status===opt.value?' active':''}" data-i="\${i}" data-status="\${opt.value}">\${opt.label}</button>\`).join('')}
       </div>
     `;
     charsContainer.appendChild(div);
@@ -130,21 +139,32 @@ function renderHeroes(){
 }
 
 function attachHeroListeners(){
-  document.querySelectorAll('.c-name,.c-race,.c-class,.c-portrait,.c-stat').forEach(inp => {
-    inp.oninput = () => {
+  document.querySelectorAll('.c-name,.c-race,.c-class,.c-portrait,.c-stat').forEach(inp=>{
+    inp.oninput = ()=>{
       const i = +inp.dataset.i;
-      if(!heroes[i]) heroes[i] = { name:'', race:'', class:'', portrait:'', stats:{} };
-      if(inp.classList.contains('c-name'))     heroes[i].name     = inp.value;
-      if(inp.classList.contains('c-race'))     heroes[i].race     = inp.value;
-      if(inp.classList.contains('c-class'))    heroes[i].class    = inp.value;
+      if(!heroes[i]) heroes[i] = { name:'', race:'', class:'', portrait:'', stats:{}, status:'alive' };
+      if(inp.classList.contains('c-name'))     heroes[i].name = inp.value;
+      if(inp.classList.contains('c-race'))     heroes[i].race = inp.value;
+      if(inp.classList.contains('c-class'))    heroes[i].class = inp.value;
       if(inp.classList.contains('c-portrait')) heroes[i].portrait = inp.value;
       if(inp.classList.contains('c-stat'))     heroes[i].stats[inp.dataset.stat] = inp.value;
     };
   });
-  document.querySelectorAll('.clearChar').forEach(b => {
-    b.onclick = () => {
+  document.querySelectorAll('.clearChar').forEach(b=>{
+    b.onclick = ()=>{
       const i = +b.dataset.i;
-      heroes[i] = { name:'', race:'', class:'', portrait:'', stats:{} };
+      heroes[i] = { name:'', race:'', class:'', portrait:'', stats:{}, status:'alive' };
+      renderHeroes();
+    };
+  });
+
+  // Обработчики статуса
+  document.querySelectorAll('.status-btn').forEach(btn=>{
+    btn.onclick = ()=>{
+      const i = +btn.dataset.i;
+      const status = btn.dataset.status;
+      if(!heroes[i]) heroes[i] = { name:'', race:'', class:'', portrait:'', stats:{}, status:'alive' };
+      heroes[i].status = status;
       renderHeroes();
     };
   });
@@ -153,53 +173,44 @@ function attachHeroListeners(){
 // --- Словарь ---
 function populateGlossLetters(){
   glossLetter.innerHTML = '';
-  letters.forEach(l => {
+  letters.forEach(l=>{
     const opt = document.createElement('option');
-    opt.value = l;
-    opt.textContent = l;
+    opt.value = l; opt.textContent = l;
     glossLetter.appendChild(opt);
   });
   glossLetter.onchange = renderGloss;
 }
 
 function renderGloss(){
-  const L    = glossLetter.value || letters[0];
+  const L = glossLetter.value || letters[0];
   const list = (glossary[L] || []).slice();
   sortGlossaryArray(list);
   glossList.innerHTML = '';
-  list.forEach((it, idx) => {
+  list.forEach((it, idx)=>{
     const div = document.createElement('div');
-    div.innerHTML = `
-      <div>
-        <strong>${escapeHtml(it.term)}</strong>
-        <div class="small">${escapeHtml(it.desc)}</div>
-      </div>
-      <div style="display:flex;gap:6px">
-        <button class="editTerm" data-i="${idx}">✎</button>
-        <button class="delTerm" data-i="${idx}">🗑</button>
-      </div>`;
+    div.innerHTML = \`<div><strong>\${escapeHtml(it.term)}</strong><div class="small">\${escapeHtml(it.desc)}</div></div>\n      <div style="display:flex;gap:6px">\n        <button class="editTerm" data-i="\${idx}">✎</button>\n        <button class="delTerm" data-i="\${idx}">🗑</button>\n      </div>\`;
     glossList.appendChild(div);
   });
   attachGlossListeners();
 }
 
 function attachGlossListeners(){
-  document.querySelectorAll('.delTerm').forEach(b => {
-    b.onclick = () => {
+  document.querySelectorAll('.delTerm').forEach(b=>{
+    b.onclick = ()=>{
       const i = +b.dataset.i;
       const L = glossLetter.value;
-      glossary[L].splice(i, 1);
+      glossary[L].splice(i,1);
       sortGlossaryArray(glossary[L]);
       renderGloss();
     };
   });
-  document.querySelectorAll('.editTerm').forEach(b => {
-    b.onclick = () => {
-      const i = +b.dataset.i;
-      const L = glossLetter.value;
+  document.querySelectorAll('.editTerm').forEach(b=>{
+    b.onclick = ()=>{
+      const i  = +b.dataset.i;
+      const L  = glossLetter.value;
       const it = glossary[L][i];
-      const t = prompt('Термин', it.term); if(t === null) return;
-      const d = prompt('Описание', it.desc); if(d === null) return;
+      const t = prompt('Термин', it.term); if(t===null) return;
+      const d = prompt('Описание', it.desc); if(d===null) return;
       it.term = t; it.desc = d;
       sortGlossaryArray(glossary[L]);
       renderGloss();
@@ -208,16 +219,16 @@ function attachGlossListeners(){
 }
 
 // --- Кнопки ---
-document.getElementById('addTerm').onclick = () => {
+document.getElementById('addTerm').onclick = ()=>{
   const t = document.getElementById('newTerm').value.trim();
   const d = document.getElementById('newDesc').value.trim();
   if(!t) return alert('Введите термин');
   const L = glossLetter.value;
   if(!glossary[L]) glossary[L] = [];
-  glossary[L].push({ term:t, desc:d });
+  glossary[L].push({term:t, desc:d});
   sortGlossaryArray(glossary[L]);
-  document.getElementById('newTerm').value = '';
-  document.getElementById('newDesc').value = '';
+  document.getElementById('newTerm').value='';
+  document.getElementById('newDesc').value='';
   renderGloss();
 };
 
@@ -227,7 +238,7 @@ downloadHeroesBtn.onclick = () => downloadJSON('heroes.json', heroes);
 const addHeroBtn = document.getElementById('addHero');
 if (addHeroBtn) {
   addHeroBtn.onclick = () => {
-    heroes.push({ name:'', race:'', class:'', portrait:'', stats:{} });
+    heroes.push({ name:'', race:'', class:'', portrait:'', stats:{}, status:'alive' });
     renderHeroes();
   };
 }
@@ -235,7 +246,7 @@ if (addHeroBtn) {
 // Скачивание глоссария по алфавиту
 downloadGlossBtn.onclick = () => {
   const sortedGlossary = {};
-  letters.forEach(L => {
+  letters.forEach(L=>{
     if(glossary[L] && glossary[L].length) {
       const arr = glossary[L].slice();
       sortGlossaryArray(arr);
@@ -246,22 +257,22 @@ downloadGlossBtn.onclick = () => {
 };
 
 // --- Вкладки ---
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
     tab.classList.add('active');
     const target = tab.dataset.tab;
-    document.getElementById('tabHeroes').style.display   = (target === 'heroes')   ? '' : 'none';
-    document.getElementById('tabGlossary').style.display = (target === 'glossary') ? '' : 'none';
+    document.getElementById('tabHeroes').style.display   = (target==='heroes') ? '' : 'none';
+    document.getElementById('tabGlossary').style.display = (target==='glossary') ? '' : 'none';
   });
 });
 
-// --- Кнопка очистки (loadSampleHeroes) ---
+// --- Дополнительная кнопка очистки ---
 if (loadSampleHeroesBtn) {
   loadSampleHeroesBtn.onclick = () => {
     heroes = [];
     for (let i=0; i<4; i++) {
-      heroes.push({ name:'', race:'', class:'', portrait:'', stats:{} });
+      heroes.push({ name:'', race:'', class:'', portrait:'', stats:{}, status:'alive' });
     }
     renderHeroes();
   };
