@@ -224,9 +224,11 @@ body.light-theme {
   font-size: clamp(0.9rem, 1.8vw, 1.2rem);
 }
 
+/* Attributes of a hero (СИЛ, ЛОВ, etc.) shown in the detail panel. List them
+   vertically instead of two columns to avoid large empty space. */
 .attrs {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 4px;
   margin-top: 6px;
   font-size: clamp(0.85rem, 1.6vw, 1.1rem);
