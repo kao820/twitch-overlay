@@ -1,11 +1,14 @@
+// Elements
 const heroesTab = document.getElementById("heroesTab");
 const glossaryTab = document.getElementById("glossaryTab");
-
 const heroesSection = document.getElementById("heroesSection");
 const glossarySection = document.getElementById("glossarySection");
-
 const heroesList = document.getElementById("heroesList");
-const heroCard = document.getElementById("heroCard");
+
+const heroModal = document.getElementById("heroModal");
+const heroTitle = document.getElementById("heroTitle");
+const heroContent = document.getElementById("heroContent");
+const heroClose = document.getElementById("heroClose");
 
 const alphabet = document.getElementById("alphabet");
 const termsList = document.getElementById("termsList");
@@ -16,9 +19,11 @@ const termTitle = document.getElementById("termTitle");
 const termDesc = document.getElementById("termDesc");
 const termClose = document.getElementById("termClose");
 
+// Tab switching
 heroesTab.onclick = () => setTab("heroes");
 glossaryTab.onclick = () => setTab("glossary");
 termClose.onclick = () => termModal.classList.add("hidden");
+heroClose.onclick = () => heroModal.classList.add("hidden");
 
 function setTab(tab) {
   const isHeroes = tab === "heroes";
@@ -28,7 +33,7 @@ function setTab(tab) {
   glossarySection.classList.toggle("hidden", isHeroes);
 }
 
-// settings
+// Load settings (colors/background)
 fetch("data/settings.json")
   .then((res) => res.json())
   .then((st) => {
@@ -39,44 +44,62 @@ fetch("data/settings.json")
     if (st.background) document.body.style.backgroundImage = `url('${st.background}')`;
   });
 
-// герои
+// Load heroes and render in columns by status
 fetch("data/heroes.json")
   .then((res) => res.json())
   .then((data) => {
+    // group by status; default to alive if no status property
+    const groups = { alive: [], dead: [], unknown: [] };
     data.forEach((hero) => {
+      const status = hero.status || "alive";
+      if (!groups[status]) groups[status] = [];
+      groups[status].push(hero);
+    });
+    renderHeroes(groups);
+  });
+
+function renderHeroes(groups) {
+  heroesList.innerHTML = "";
+  const order = ["alive", "dead", "unknown"];
+  const labels = { alive: "Живы", dead: "Мёртвы", unknown: "Неизвестно" };
+  order.forEach((status) => {
+    const col = document.createElement("div");
+    col.className = "status-column";
+    const h = document.createElement("h4");
+    h.textContent = labels[status];
+    col.appendChild(h);
+    const listDiv = document.createElement("div");
+    (groups[status] || []).forEach((hero) => {
       const btn = document.createElement("button");
       btn.textContent = hero.name;
       btn.onclick = () => showHero(hero);
-      heroesList.appendChild(btn);
+      listDiv.appendChild(btn);
     });
+    col.appendChild(listDiv);
+    heroesList.appendChild(col);
   });
-
-function showHero(h) {
-  heroCard.innerHTML = `
-    <div class="hero-left">
-      <div class="hero-name">${h.name}</div>
-      <div class="portrait" style="background-image:url('${h.portrait}')"></div>
-    </div>
-    <div class="hero-right">
-      <div class="stat-row">❤ ${h.hp} 🛡 ${h.brn} ⬆ ${h.urv}</div>
-      <div><b>Раса:</b> ${h.race}</div>
-      <div><b>Класс:</b> ${h.class}</div>
-      <div class="attrs">
-        <div>СИЛ: ${h.stats.СИЛ}</div>
-        <div>ЛОВ: ${h.stats.ЛОВ}</div>
-        <div>ВЫН: ${h.stats.ВЫН}</div>
-        <div>ИНТ: ${h.stats.ИНТ}</div>
-        <div>МУД: ${h.stats.МУД}</div>
-        <div>ХАР: ${h.stats.ХАР}</div>
-      </div>
-    </div>
-  `;
-  heroCard.classList.remove("hidden");
 }
 
-// глоссарий
-let glossaryData = {};
+function showHero(h) {
+  heroTitle.textContent = h.name;
+  heroContent.innerHTML = `
+    <div class="hero-stats">❤ ${h.hp} 🛡 ${h.brn} ⬆ ${h.urv}</div>
+    <div><b>Раса:</b> ${h.race}</div>
+    <div><b>Класс:</b> ${h.class}</div>
+    <div class="attrs">
+      <div>СИЛ: ${h.stats?.СИЛ ?? ''}</div>
+      <div>ЛОВ: ${h.stats?.ЛОВ ?? ''}</div>
+      <div>ВЫН: ${h.stats?.ВЫН ?? ''}</div>
+      <div>ИНТ: ${h.stats?.ИНТ ?? ''}</div>
+      <div>МУД: ${h.stats?.МУД ?? ''}</div>
+      <div>ХАР: ${h.stats?.ХАР ?? ''}</div>
+    </div>
+  `;
+  heroModal.classList.remove("hidden");
+}
 
+// Glossary
+let glossaryData = {};
 fetch("data/glossary.json")
   .then((res) => res.json())
   .then((data) => {
@@ -98,11 +121,9 @@ function renderAlphabet() {
 function renderGlossaryList(filter) {
   termsList.innerHTML = "";
   const query = searchInput.value.toLowerCase();
-
   const letters = filter ? [filter] : Object.keys(glossaryData);
-
   letters.forEach((letter) => {
-    glossaryData[letter].forEach((item) => {
+    (glossaryData[letter] || []).forEach((item) => {
       if (
         item.term.toLowerCase().includes(query) ||
         item.desc.toLowerCase().includes(query)
