@@ -14,6 +14,8 @@
     <div class="overlay-header">
       <button id="heroesTab" class="tab active">Герои</button>
       <button id="glossaryTab" class="tab">Словарь</button>
+      <!-- Переключатель светлой/тёмной темы -->
+      <button id="themeToggle" class="theme-toggle" title="Переключить тему">🌙</button>
     </div>
     <div id="heroesSection" class="section">
       <!-- Контейнер для трёх колонок статусов -->
@@ -24,12 +26,66 @@
       <div id="alphabet" class="alphabet"></div>
       <div id="termsList" class="terms-list"></div>
     </div>
-    <!-- Панель подробностей: отображается справа от панели overlay -->
-    <div id="detailPanel" class="detail-panel hidden">
-      <button id="detailClose" class="close-btn">✕</button>
-      <h3 id="detailHeader"></h3>
-      <div id="detailBody"></div>
+  </div>
+  <!-- Панель подробностей: отображается справа от панели overlay (вынесена за пределы overlayPanel) -->
+  <div id="detailPanel" class="detail-panel hidden">
+    <button id="detailClose" class="close-btn">✕</button>
+    <h3 id="detailHeader"></h3>
+    <div id="detailBody"></div>
+  </div>
+
+  <script src="viewer.js"></script>
+  <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
+  <script>
+    // глобальная функция
+    function sendClick(action) {
+      console.log("Пользователь кликнул:", action);
+    }
+    // Twitch авторизация
+    window.Twitch?.ext?.onAuthorized?.(function (auth) {
+      console.log("Twitch Extension авторизация успешна:", auth);
+    });
+    // Навешиваем события для аналитики
+    document.getElementById("heroesTab")?.addEventListener("click", () => sendClick("heroesTab"));
+    document.getElementById("glossaryTab")?.addEventListener("click", () => sendClick("glossaryTab"));
+    document.getElementById("termClose")?.addEventListener("click", () => sendClick("termClose"));
+    document.getElementById("heroClose")?.addEventListener("click", () => sendClick("heroClose"));
+  </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LRS Overlay</title>
+  <!-- ChatGPT style colors -->
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+</head>
+<body>
+  <!-- Панель всегда открыта -->
+  <div id="overlayPanel" class="overlay-panel">
+    <div class="overlay-header">
+      <button id="heroesTab" class="tab active">Герои</button>
+      <button id="glossaryTab" class="tab">Словарь</button>
+      <!-- Переключатель светлой/тёмной темы -->
+      <button id="themeToggle" class="theme-toggle" title="Переключить тему">🌙</button>
     </div>
+    <div id="heroesSection" class="section">
+      <!-- Контейнер для трёх колонок статусов -->
+      <div id="heroesList" class="heroes-columns"></div>
+    </div>
+    <div id="glossarySection" class="section hidden">
+      <input type="text" id="searchInput" placeholder="Поиск..." />
+      <div id="alphabet" class="alphabet"></div>
+      <div id="termsList" class="terms-list"></div>
+    </div>
+  </div>
+  <!-- Панель подробностей: отображается справа от панели overlay (вынесена за пределы overlayPanel) -->
+  <div id="detailPanel" class="detail-panel hidden">
+    <button id="detailClose" class="close-btn">✕</button>
+    <h3 id="detailHeader"></h3>
+    <div id="detailBody"></div>
   </div>
 
   <script src="viewer.js"></script>
