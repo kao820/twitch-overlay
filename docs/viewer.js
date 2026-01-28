@@ -5,7 +5,6 @@ const heroesSection = document.getElementById("heroesSection");
 const glossarySection = document.getElementById("glossarySection");
 const heroesList = document.getElementById("heroesList");
 
-// Detail panel elements (for both hero and glossary)
 const detailPanel  = document.getElementById("detailPanel");
 const detailHeader = document.getElementById("detailHeader");
 const detailBody   = document.getElementById("detailBody");
@@ -16,9 +15,8 @@ const termsList = document.getElementById("termsList");
 const searchInput = document.getElementById("searchInput");
 
 // Tab switching
-heroesTab.onclick = () => setTab("heroes");
+heroesTab.onclick   = () => setTab("heroes");
 glossaryTab.onclick = () => setTab("glossary");
-// Close detail panel
 detailClose.onclick = () => detailPanel.classList.add("hidden");
 
 function setTab(tab) {
@@ -29,25 +27,23 @@ function setTab(tab) {
   glossarySection.classList.toggle("hidden", isHeroes);
 }
 
-// Load settings (colors/background)
+// Load settings (colours/background)
 fetch("data/settings.json")
-  .then(res => res.json())
-  .then(st => {
+  .then((res) => res.json())
+  .then((st) => {
     const root = document.documentElement.style;
     if (st.textColor) root.setProperty("--text-color", st.textColor);
     if (st.btnColor)  root.setProperty("--btn-color", st.btnColor);
     if (st.panelBg)   root.setProperty("--panel-bg", st.panelBg);
-    // Удаляем фоновое изображение, чтобы убрать «шкуру»
-    // if (st.background) document.body.style.backgroundImage = `url('${st.background}')`;
+    // ignore background image to avoid “fur” texture
   });
 
 // Load heroes and render in columns by status
 fetch("data/heroes.json")
-  .then(res => res.json())
-  .then(data => {
-    // group by status; default to alive if no status property
+  .then((res) => res.json())
+  .then((data) => {
     const groups = { alive: [], dead: [], unknown: [] };
-    data.forEach(hero => {
+    data.forEach((hero) => {
       const status = hero.status || "alive";
       if (!groups[status]) groups[status] = [];
       groups[status].push(hero);
@@ -59,17 +55,24 @@ function renderHeroes(groups) {
   heroesList.innerHTML = "";
   const order  = ["alive", "dead", "unknown"];
   const labels = { alive: "Живы", dead: "Мёртвы", unknown: "Неизвестно" };
-  order.forEach(status => {
+  order.forEach((status) => {
     const col = document.createElement("div");
     col.className = "status-column";
     const h = document.createElement("h4");
     h.textContent = labels[status];
     col.appendChild(h);
     const listDiv = document.createElement("div");
-    (groups[status] || []).forEach(hero => {
+    const sorted = (groups[status] || [])
+      .slice()
+      .sort((a, b) =>
+        (a.name || "").toLocaleUpperCase().localeCompare(
+          (b.name || "").toLocaleUpperCase(),
+          "ru-RU"
+        )
+      );
+    sorted.forEach((hero) => {
       const btn = document.createElement("button");
-      // В каждой кнопке показываем мини‑портрет и имя
-      btn.innerHTML = `<img src="${hero.portrait}" alt="" class="hero-icon"> <span>${hero.name}</span>`;
+      btn.textContent = hero.name;
       btn.onclick = () => showHero(hero);
       listDiv.appendChild(btn);
     });
@@ -79,7 +82,6 @@ function renderHeroes(groups) {
 }
 
 function showHero(h) {
-  // Заполняем заголовок и содержимое панели подробностей
   detailHeader.textContent = h.name;
   detailBody.innerHTML = `
     <img src="${h.portrait}" alt="${h.name}" class="hero-portrait">
@@ -101,8 +103,8 @@ function showHero(h) {
 // Glossary
 let glossaryData = {};
 fetch("data/glossary.json")
-  .then(res => res.json())
-  .then(data => {
+  .then((res) => res.json())
+  .then((data) => {
     glossaryData = data;
     renderAlphabet();
     renderGlossaryList();
@@ -110,7 +112,7 @@ fetch("data/glossary.json")
 
 function renderAlphabet() {
   alphabet.innerHTML = "";
-  Object.keys(glossaryData).forEach(letter => {
+  Object.keys(glossaryData).forEach((letter) => {
     const btn = document.createElement("button");
     btn.textContent = letter;
     btn.onclick = () => renderGlossaryList(letter);
@@ -122,8 +124,8 @@ function renderGlossaryList(filter) {
   termsList.innerHTML = "";
   const query   = searchInput.value.toLowerCase();
   const letters = filter ? [filter] : Object.keys(glossaryData);
-  letters.forEach(letter => {
-    (glossaryData[letter] || []).forEach(item => {
+  letters.forEach((letter) => {
+    (glossaryData[letter] || []).forEach((item) => {
       if (
         item.term.toLowerCase().includes(query) ||
         item.desc.toLowerCase().includes(query)
@@ -140,7 +142,6 @@ function renderGlossaryList(filter) {
 searchInput.oninput = () => renderGlossaryList();
 
 function openTerm(t) {
-  // Заполняем панель подробностей для термина
   detailHeader.textContent = t.term;
   detailBody.innerHTML = `<p>${t.desc}</p>`;
   detailPanel.classList.remove("hidden");
