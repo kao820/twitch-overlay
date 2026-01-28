@@ -290,11 +290,39 @@ body.light-theme {
   color: var(--accent-color);
 }
 
-/* Portrait of the hero shown in the detail panel. Make it take full width of the panel and scale adaptively. */
+/* Container for the detail panel body (hero or glossary). Use flex to position
+   the hero portrait on the left and the details on the right. The flex layout
+   allows the image to maintain a fixed width while the text adapts to the
+   remaining space. */
+#detailBody {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Portrait of the hero shown in the detail panel. Fix the width so that it
+   doesn't stretch across the entire panel. Height is automatic to preserve
+   aspect ratio. The flex container ensures the remaining text flows
+   alongside the image. */
 #detailBody img.hero-portrait {
-  width: 100%;
+  width: 180px;
+  max-width: 100%;
   height: auto;
-  display: block;
-  margin-bottom: 16px;
   border-radius: 8px;
+  flex-shrink: 0;
+}
+
+/* Wrapper for hero information in the detail panel. This section will
+   occupy the remaining horizontal space next to the portrait. */
+.hero-info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Ensure paragraphs in the detail panel (glossary terms) occupy the full
+   available width when displayed alone inside the flex container. */
+#detailBody p {
+  flex: 1 1 100%;
+  margin-top: 0;
 }
