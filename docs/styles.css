@@ -25,6 +25,8 @@ body {
   background-color: var(--bg-color);
   color: var(--text-color);
   overflow: hidden; /* prevent body scroll; panel handles its own */
+  /* Сбрасываем фоновое изображение, указанное в settings.json */
+  background-image: none !important;
 }
 
 /* Overlay panel anchored to the left */
@@ -111,6 +113,9 @@ body {
   cursor: pointer;
   text-align: left;
   transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .status-column button:hover {
@@ -212,4 +217,54 @@ body {
 
 .close-btn:hover {
   color: var(--accent-color);
+}
+
+/* Мини‑портрет в списке героев */
+.hero-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+/* Кнопка закрытия внутри detail-panel */
+.detail-panel .close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+/* Панель подробностей для героя или термина */
+.detail-panel {
+  position: absolute;
+  top: 0;
+  left: 360px; /* ширина overlay-panel */
+  width: calc(100% - 360px);
+  height: 100vh;
+  background: var(--panel-bg);
+  border-left: 1px solid var(--border-color);
+  padding: 16px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  z-index: 500; /* ниже overlay-panel для просмотра */
+}
+
+.detail-panel.hidden {
+  display: none;
+}
+
+/* Заголовок и контент панели */
+#detailHeader {
+  margin: 0 0 12px;
+  font-size: 1.4rem;
+  color: var(--accent-color);
+}
+
+#detailBody img.hero-portrait {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  display: block;
+  margin-bottom: 12px;
+  border-radius: 8px;
 }
