@@ -1,9 +1,9 @@
 // Elements
-const heroesTab      = document.getElementById("heroesTab");
-const glossaryTab    = document.getElementById("glossaryTab");
-const heroesSection  = document.getElementById("heroesSection");
-const glossarySection= document.getElementById("glossarySection");
-const heroesList     = document.getElementById("heroesList");
+const heroesTab = document.getElementById("heroesTab");
+const glossaryTab = document.getElementById("glossaryTab");
+const heroesSection = document.getElementById("heroesSection");
+const glossarySection = document.getElementById("glossarySection");
+const heroesList = document.getElementById("heroesList");
 
 // Detail panel elements (for both hero and glossary)
 const detailPanel  = document.getElementById("detailPanel");
@@ -13,8 +13,8 @@ const detailClose  = document.getElementById("detailClose");
 // Theme toggle element
 const themeToggle  = document.getElementById("themeToggle");
 
-const alphabet  = document.getElementById("alphabet");
-const termsList = document.getElementById("termsList");
+const alphabet   = document.getElementById("alphabet");
+const termsList  = document.getElementById("termsList");
 const searchInput = document.getElementById("searchInput");
 
 // Tab switching
@@ -57,7 +57,6 @@ fetch("data/settings.json")
     if (st.btnColor)  root.setProperty("--btn-color",  st.btnColor);
     if (st.panelBg)   root.setProperty("--panel-bg",   st.panelBg);
     // игнорируем фоновое изображение, чтобы убрать «шкуру»
-    // if (st.background) document.body.style.backgroundImage = `url('${st.background}')`;
   });
 
 // Load heroes and render in columns by status
@@ -85,15 +84,12 @@ function renderHeroes(groups) {
     h.textContent = labels[status];
     col.appendChild(h);
     const listDiv = document.createElement("div");
-    // Сортируем героев в каждой колонке по алфавиту (без учёта регистра)
-    const sorted = (groups[status] || []).slice().sort((a, b) => {
-      const nameA = (a.name || '').toLocaleUpperCase();
-      const nameB = (b.name || '').toLocaleUpperCase();
-      return nameA.localeCompare(nameB, 'ru-RU');
-    });
+    // Сортируем героев в каждой колонке по алфавиту
+    const sorted = (groups[status] || []).slice().sort((a,b) =>
+      (a.name || '').toLocaleUpperCase().localeCompare((b.name || '').toLocaleUpperCase(), 'ru-RU')
+    );
     sorted.forEach((hero) => {
       const btn = document.createElement("button");
-      // Кнопка отображает только имя героя. Портрет будет показан в панели подробностей.
       btn.textContent = hero.name;
       btn.onclick = () => showHero(hero);
       listDiv.appendChild(btn);
@@ -104,20 +100,21 @@ function renderHeroes(groups) {
 }
 
 function showHero(h) {
-  // Заполняем заголовок и содержимое панели подробностей
   detailHeader.textContent = h.name;
   detailBody.innerHTML = `
     <img src="${h.portrait}" alt="${h.name}" class="hero-portrait">
-    <div class="hero-stats">❤ ${h.hp} 🛡 ${h.brn} ⬆ ${h.urv}</div>
-    <div><b>Раса:</b> ${h.race}</div>
-    <div><b>Класс:</b> ${h.class}</div>
-    <div class="attrs">
-      <div>СИЛ: ${h.stats?.СИЛ ?? ''}</div>
-      <div>ЛОВ: ${h.stats?.ЛОВ ?? ''}</div>
-      <div>ВЫН: ${h.stats?.ВЫН ?? ''}</div>
-      <div>ИНТ: ${h.stats?.ИНТ ?? ''}</div>
-      <div>МУД: ${h.stats?.МУД ?? ''}</div>
-      <div>ХАР: ${h.stats?.ХАР ?? ''}</div>
+    <div class="hero-info">
+      <div class="hero-stats">❤ ${h.hp} 🛡 ${h.brn} ⬆ ${h.urv}</div>
+      <div><b>Раса:</b> ${h.race}</div>
+      <div><b>Класс:</b> ${h.class}</div>
+      <div class="attrs">
+        <div>СИЛ: ${h.stats?.СИЛ ?? ''}</div>
+        <div>ЛОВ: ${h.stats?.ЛОВ ?? ''}</div>
+        <div>ВЫН: ${h.stats?.ВЫН ?? ''}</div>
+        <div>ИНТ: ${h.stats?.ИНТ ?? ''}</div>
+        <div>МУД: ${h.stats?.МУД ?? ''}</div>
+        <div>ХАР: ${h.stats?.ХАР ?? ''}</div>
+      </div>
     </div>
   `;
   detailPanel.classList.remove("hidden");
@@ -165,7 +162,6 @@ function renderGlossaryList(filter) {
 searchInput.oninput = () => renderGlossaryList();
 
 function openTerm(t) {
-  // Заполняем панель подробностей для термина
   detailHeader.textContent = t.term;
   detailBody.innerHTML = `<p>${t.desc}</p>`;
   detailPanel.classList.remove("hidden");
