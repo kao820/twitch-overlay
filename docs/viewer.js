@@ -178,3 +178,32 @@ function applyTheme() {
     if (themeToggle) themeToggle.textContent = "🌙";
   }
 }
+
+function adjustDetailPanelForViewport() {
+  const mobileWidth = 600;
+  if (window.innerWidth <= mobileWidth) {
+    detailPanel.style.left = '0';
+    detailPanel.style.top = '0';
+    detailPanel.style.width = '100%';
+    detailPanel.style.height = '100vh';
+    detailPanel.style.borderLeft = 'none';
+  } else {
+    detailPanel.style.left = '360px';
+    detailPanel.style.top = '0';
+    detailPanel.style.width = 'calc(100% - 360px)';
+    detailPanel.style.height = '100vh';
+    detailPanel.style.borderLeft = '';
+  }
+}
+
+// … внутри showHero и openTerm:
+detailPanel.classList.remove('hidden');
+adjustDetailPanelForViewport();
+
+// И подписываемся на изменение размеров:
+window.addEventListener('resize', () => {
+  if (!detailPanel.classList.contains('hidden')) {
+    adjustDetailPanelForViewport();
+  }
+});
+
