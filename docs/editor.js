@@ -23,9 +23,17 @@ let glossary = {};
 const letters = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'.split('');
 
 // --- Загрузка JSON ---
+// Определяем базовый путь к данным. Когда админка работает на Twitch CDN
+// (редко), данные необходимо загружать с GitHub Pages. В остальных
+// случаях (GitHub Pages, локальный тест) данные расположены в папке data/.
+const isProd = window.location.hostname.includes('ext-twitch.tv');
+const DATA_BASE_URL = isProd
+  ? 'https://kao820.github.io/twitch-overlay/data/'
+  : 'data/';
+
 async function loadJSON(path){
   try{
-    const r = await fetch(path, {cache:'no-store'});
+    const r = await fetch(`${DATA_BASE_URL}${path}`, {cache:'no-store'});
     if(r.ok) return await r.json();
   }catch(e){}
   return null;
@@ -35,8 +43,8 @@ async function loadJSON(path){
 // Загружаем данные и настраиваем интерфейс после полной загрузки DOM.
 document.addEventListener('DOMContentLoaded', async () => {
   // Загружаем данные героев и словаря
-  heroes = await loadJSON('data/heroes.json') || [];
-  glossary = await loadJSON('data/glossary.json') || {};
+  heroes = await loadJSON('heroes.json') || [];
+  glossary = await loadJSON('glossary.json') || {};
   // Отрисовываем интерфейс
   renderHeroes();
   populateGlossLetters();
@@ -109,11 +117,11 @@ function setupEventHandlers() {
     downloadGlossBtn.onclick = () => {
       const sortedGlossary = {};
       letters.forEach(L => {
-      if (glossary[L] && glossary[L].length) {
-        const arr = glossary[L].slice();
-        sortGlossaryArray(arr);
-        sortedGlossary[L] = arr;
-      }
+        if (glossary[L] && glossary[L].length) {
+          const arr = glossary[L].slice();
+          sortGlossaryArray(arr);
+          sortedGlossary[L] = arr;
+        }
       });
       downloadJSON('glossary.json', sortedGlossary);
     };
@@ -173,6 +181,7 @@ function sortGlossaryArray(arr){
 function renderHeroes(){
   charsContainer.innerHTML = '';
   // Отобразим всех активных героев и хотя бы четыре пустые карточки.
+  // Если активных героев больше четырёх, отобразятся все.
   const count = Math.max(4, heroes.length);
   for (let i = 0; i < count; i++) {
     const c = heroes[i] || { name: '', race: '', class: '', portrait: '', stats: {}, status: 'alive' };
@@ -207,6 +216,7 @@ function attachHeroListeners(){
   document.querySelectorAll('.c-name,.c-race,.c-class,.c-portrait,.c-stat').forEach(inp=>{
     inp.oninput = ()=>{
       const i = +inp.dataset.i;
+      // Инициализируем персонажа, если ещё не существует
       if(!heroes[i]) heroes[i] = { name:'', race:'', class:'', portrait:'', stats:{}, status:'alive' };
       if(inp.classList.contains('c-name')) heroes[i].name = inp.value;
       if(inp.classList.contains('c-race')) heroes[i].race = inp.value;
@@ -286,6 +296,7 @@ function attachGlossListeners(){
     };
   });
 }
+
 
 // --- Дополнительная кнопка очистки (loadSampleHeroes) ---
 if (loadSampleHeroesBtn) {
