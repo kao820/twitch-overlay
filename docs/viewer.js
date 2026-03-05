@@ -13,8 +13,8 @@ const detailClose = document.getElementById("detailClose");
 // Theme toggle element
 const themeToggle = document.getElementById("themeToggle");
 
-const alphabet   = document.getElementById("alphabet");
-const termsList  = document.getElementById("termsList");
+const alphabet = document.getElementById("alphabet");
+const termsList = document.getElementById("termsList");
 const searchInput = document.getElementById("searchInput");
 
 // Ensure the detail panel is hidden on initial load. Some older versions of
@@ -27,7 +27,7 @@ if (detailPanel && !detailPanel.classList.contains('hidden')) {
 }
 
 // Tab switching
-heroesTab.onclick   = () => setTab("heroes");
+heroesTab.onclick = () => setTab("heroes");
 glossaryTab.onclick = () => setTab("glossary");
 // Close detail panel
 detailClose.onclick = () => detailPanel.classList.add("hidden");
@@ -51,25 +51,37 @@ if (themeToggle) {
 
 function setTab(tab) {
   const isHeroes = tab === "heroes";
-  heroesTab.classList.toggle("active",  isHeroes);
+  heroesTab.classList.toggle("active", isHeroes);
   glossaryTab.classList.toggle("active", !isHeroes);
   heroesSection.classList.toggle("hidden", !isHeroes);
-  glossarySection.classList.toggle("hidden",  isHeroes);
+  glossarySection.classList.toggle("hidden", isHeroes);
 }
 
-// Load settings (colours/background) — overrides some CSS variables if data/settings.json exists
-fetch("data/settings.json")
+// Determine where to load data from. When the extension is served from
+// Twitch's CDN (production), assets and JSON must be fetched from a
+// publicly accessible host (e.g. GitHub Pages). In local test or on
+// GitHub Pages itself, files live relative to the current directory.
+const isProd = window.location.hostname.includes('ext-twitch.tv');
+const DATA_BASE_URL = isProd
+  ? 'https://kao820.github.io/twitch-overlay/data/'
+  : 'data/';
+const ASSETS_BASE_URL = isProd
+  ? 'https://kao820.github.io/twitch-overlay/'
+  : '';
+
+// Load settings (colors/background)
+fetch(`${DATA_BASE_URL}settings.json`)
   .then((res) => res.json())
   .then((st) => {
     const root = document.documentElement.style;
     if (st.textColor) root.setProperty("--text-color", st.textColor);
     if (st.btnColor)  root.setProperty("--btn-color",  st.btnColor);
     if (st.panelBg)   root.setProperty("--panel-bg",   st.panelBg);
-    // игнорируем фоновое изображение, чтобы убрать «шкуру»
+    // intentionally ignore st.background to avoid loading textures
   });
 
 // Load heroes and render in columns by status
-fetch("data/heroes.json")
+fetch(`${DATA_BASE_URL}heroes.json`)
   .then((res) => res.json())
   .then((data) => {
     // group by status; default to alive if no status property
@@ -84,7 +96,7 @@ fetch("data/heroes.json")
 
 function renderHeroes(groups) {
   heroesList.innerHTML = "";
-  const order  = ["alive", "dead", "unknown"];
+  const order = ["alive", "dead", "unknown"];
   const labels = { alive: "Живы", dead: "Мёртвы", unknown: "Неизвестно" };
   order.forEach((status) => {
     const col = document.createElement("div");
@@ -111,13 +123,21 @@ function renderHeroes(groups) {
   });
 }
 
+function getPortraitUrl(p) {
+  if (!p) return '';
+  // Absolute URLs or data URIs are used as-is.
+  if (/^(https?:|data:)/.test(p)) return p;
+  // Otherwise prefix with the assets base URL.
+  return ASSETS_BASE_URL + p;
+}
+
 function showHero(h) {
   // Заполняем заголовок и содержимое панели подробностей. Используем
   // отдельный контейнер .hero-info, чтобы портрет занимал фиксированное
   // место слева, а текст — оставшееся пространство справа.
   detailHeader.textContent = h.name;
   detailBody.innerHTML = `
-    <img src="${h.portrait}" alt="${h.name}" class="hero-portrait">
+    <img src="${getPortraitUrl(h.portrait)}" alt="${h.name}" class="hero-portrait">
     <div class="hero-info">
       <div class="hero-stats">❤ ${h.hp} 🛡 ${h.brn} ⬆ ${h.urv}</div>
       <div><b>Раса:</b> ${h.race}</div>
@@ -139,7 +159,7 @@ function showHero(h) {
 
 // Glossary
 let glossaryData = {};
-fetch("data/glossary.json")
+fetch(`${DATA_BASE_URL}glossary.json`)
   .then((res) => res.json())
   .then((data) => {
     glossaryData = data;
@@ -159,7 +179,7 @@ function renderAlphabet() {
 
 function renderGlossaryList(filter) {
   termsList.innerHTML = "";
-  const query   = searchInput.value.toLowerCase();
+  const query = searchInput.value.toLowerCase();
   const letters = filter ? [filter] : Object.keys(glossaryData);
   letters.forEach((letter) => {
     (glossaryData[letter] || []).forEach((item) => {
@@ -199,14 +219,14 @@ function adjustDetailPanelForViewport() {
   const mobileWidth = 600;
   if (window.innerWidth <= mobileWidth) {
     detailPanel.style.left = '0';
-    detailPanel.style.top  = '0';
-    detailPanel.style.width  = '100%';
+    detailPanel.style.top = '0';
+    detailPanel.style.width = '100%';
     detailPanel.style.height = '100vh';
     detailPanel.style.borderLeft = 'none';
   } else {
-    detailPanel.style.left   = '360px';
-    detailPanel.style.top    = '0';
-    detailPanel.style.width  = 'calc(100% - 360px)';
+    detailPanel.style.left = '360px';
+    detailPanel.style.top = '0';
+    detailPanel.style.width = 'calc(100% - 360px)';
     detailPanel.style.height = '100vh';
     detailPanel.style.borderLeft = '';
   }
