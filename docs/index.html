@@ -34,8 +34,14 @@
     <div id="detailBody"></div>
   </div>
 
-  <script src="viewer.js"></script>
+  <!-- Optional privacy policy link required by Apple Review guidelines -->
+  <footer class="privacy-link">
+    <a href="https://kao820.github.io/twitch-overlay/privacy-policy.html" target="_blank">Политика&nbsp;конфиденциальности</a>
+  </footer>
+
+  <!-- Load the Twitch Extension helper BEFORE any of your own scripts -->
   <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
+  <script src="viewer.js"></script>
   <script>
     // глобальная функция
     function sendClick(action) {
