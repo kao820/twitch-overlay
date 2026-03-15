@@ -234,6 +234,25 @@ body.light-theme {
   font-size: clamp(0.85rem, 1.6vw, 1.1rem);
 }
 
+/* Privacy policy link footer. This is positioned at the bottom of the page and provides
+   a link to the privacy policy required by Apple/Twitch review. */
+.privacy-link {
+  position: fixed;
+  bottom: 4px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  z-index: 999;
+}
+.privacy-link a {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+.privacy-link a:hover {
+  text-decoration: underline;
+}
+
 .close-btn {
   position: absolute;
   top: 6px;
