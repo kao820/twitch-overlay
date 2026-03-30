@@ -14,8 +14,10 @@
       <div class="header-spacer"></div>
       <button id="themeToggle" class="icon-button" type="button" title="Переключить тему">🌙</button>
     </header>
+
     <main id="appView" class="app-view" aria-live="polite"></main>
   </div>
+
   <div id="termModal" class="modal hidden" aria-hidden="true">
     <div class="modal-backdrop" id="termModalBackdrop"></div>
     <section class="modal-card">
@@ -33,11 +35,13 @@
       <div id="termModalBody" class="modal-body"></div>
     </section>
   </div>
+
   <footer class="privacy-link">
     <a href="https://kao820.github.io/twitch-overlay/privacy-policy.html" target="_blank" rel="noreferrer">Политика конфиденциальности</a>
   </footer>
+
   <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
-  <!-- Подключаем scripts.js, который совпадает с viewer.js. Это обеспечивает старые манифесты -->
+  <!-- Используем scripts.js для старого манифеста -->
   <script src="scripts.js"></script>
 </body>
 </html>
