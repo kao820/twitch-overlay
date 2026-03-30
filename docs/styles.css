@@ -368,7 +368,7 @@ body.light-theme .icon-button {
     radial-gradient(circle at top left, rgba(177,73,50,0.18), transparent 24%),
     radial-gradient(circle at bottom right, rgba(177,73,50,0.12), transparent 26%),
     linear-gradient(180deg, rgba(255,255,255,0.03), transparent 22%),
-    #12090b;
+    var(--card-color);
   border: 1px solid var(--line-color);
   box-shadow:
     0 30px 60px var(--shadow),
@@ -377,6 +377,44 @@ body.light-theme .icon-button {
      области просмотра. Разрешаем вертикальную прокрутку, убирая
      ограничение overflow: hidden и добавляя overflow-y: auto. */
   overflow-y: auto;
+}
+
+/*
+ * В светлой теме карта героя должна использовать ровный фон без тёмных
+ * градиентов, иначе фон остаётся слишком тёмным. Этот блок переопределяет
+ * фон карточки героя только в светлой теме, сохраняя обводки и тени.
+ */
+body.light-theme .hero-card {
+  background: var(--card-color);
+}
+
+/*
+ * В светлой теме метаданные героя (раса, класс, архетип) должны иметь
+ * тот же оттенок, что и основное имя героя. По умолчанию метаданные
+ * наследуют цвет текста (тёмный), из‑за чего в светлой теме они
+ * выглядят слишком серыми. Устанавливаем для значений метаданных
+ * золотистый цвет.
+ */
+body.light-theme .hero-meta-value {
+  color: var(--gold);
+}
+
+/*
+ * В светлой теме фон и текст на бейджах (здоровье, броня, уровень)
+ * должны выглядеть светлее и гармонировать с остальной карточкой.
+ * Заменяем полупрозрачный тёмный фон на фон панели и корректируем
+ * цвет текста.
+ */
+body.light-theme .hero-badge {
+  background:
+    linear-gradient(180deg, rgba(157,93,72,0.18), rgba(255,255,255,0.015)),
+    var(--panel-color);
+}
+body.light-theme .hero-badge-label {
+  color: var(--muted);
+}
+body.light-theme .hero-badge-value {
+  color: var(--accent);
 }
 
 .hero-card::before,
@@ -452,7 +490,7 @@ body.light-theme .icon-button {
   border: 2px solid var(--line-color);
   background:
     linear-gradient(180deg, rgba(255,255,255,0.02), transparent),
-    #1b0d0f;
+    var(--panel-color);
   box-shadow: inset 0 0 0 1px rgba(224, 191, 151, 0.12);
 }
 
