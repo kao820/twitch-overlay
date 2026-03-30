@@ -1,0 +1,475 @@
+// Wrapper script to maintain backward compatibility for Twitch overlay.
+// This file contains the same logic as viewer.js.
+// Twitch’s old manifest points to `viewer.html` and `scripts.js`; by keeping this file up-to-date,
+// your overlay will continue to auto‑update from GitHub without publishing a new extension version.
+
+const appView = document.getElementById("appView");
+const backButton = document.getElementById("backButton");
+const themeToggle = document.getElementById("themeToggle");
+
+const termModal = document.getElementById("termModal");
+const termModalBackdrop = document.getElementById("termModalBackdrop");
+const termModalTitle = document.getElementById("termModalTitle");
+const termModalBody = document.getElementById("termModalBody");
+const termModalClose = document.getElementById("termModalClose");
+const fontUp = document.getElementById("fontUp");
+const fontDown = document.getElementById("fontDown");
+
+const STATUS_LABELS = {
+  alive: "Живы",
+  dead: "Мёртвы",
+  unknown: "Неизвестно"
+};
+
+const appState = {
+  view: "home",
+  selectedStatus: null,
+  selectedHero: null,
+  selectedLetter: null,
+  glossaryScale: 1,
+  history: []
+};
+
+let heroesData = [];
+let glossaryData = {};
+let settingsData = {};
+
+const isProd = window.location.hostname.includes("ext-twitch.tv");
+const DATA_BASE_URL = isProd
+  ? "https://kao820.github.io/twitch-overlay/data/"
+  : "data/";
+const ASSETS_BASE_URL = isProd
+  ? "https://kao820.github.io/twitch-overlay/"
+  : "";
+
+init();
+
+async function init() {
+  applyTheme();
+  bindStaticEvents();
+  await loadData();
+  render();
+}
+
+function bindStaticEvents() {
+  backButton.addEventListener("click", goBack);
+
+  themeToggle.addEventListener("click", () => {
+    const isLight = document.body.classList.contains("light-theme");
+    const next = isLight ? "dark" : "light";
+    localStorage.setItem("viewerTheme", next);
+    applyTheme();
+  });
+
+  termModalBackdrop.addEventListener("click", closeTermModal);
+  termModalClose.addEventListener("click", closeTermModal);
+
+  fontUp.addEventListener("click", () => {
+    appState.glossaryScale = Math.min(2.2, +(appState.glossaryScale + 0.1).toFixed(1));
+    document.documentElement.style.setProperty("--term-font-scale", appState.glossaryScale);
+  });
+
+  fontDown.addEventListener("click", () => {
+    appState.glossaryScale = Math.max(0.7, +(appState.glossaryScale - 0.1).toFixed(1));
+    document.documentElement.style.setProperty("--term-font-scale", appState.glossaryScale);
+  });
+
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !termModal.classList.contains("hidden")) {
+      closeTermModal();
+    }
+  });
+}
+
+async function loadData() {
+  const [heroes, glossary, settings] = await Promise.all([
+    loadJSON("heroes.json", []),
+    loadJSON("glossary.json", {}),
+    loadJSON("settings.json", {})
+  ]);
+
+  heroesData = Array.isArray(heroes) ? heroes : [];
+  glossaryData = glossary || {};
+  settingsData = settings || {};
+
+  applySettings();
+}
+
+async function loadJSON(path, fallback) {
+  try {
+    const response = await fetch(`${DATA_BASE_URL}${path}`, { cache: "no-store" });
+    if (!response.ok) return fallback;
+    return await response.json();
+  } catch (error) {
+    return fallback;
+  }
+}
+
+function applySettings() {
+  const root = document.documentElement.style;
+  if (settingsData?.textColor) root.setProperty("--text", settingsData.textColor);
+  if (settingsData?.panelBg) root.setProperty("--panel-color", settingsData.panelBg);
+}
+
+function applyTheme() {
+  const saved = localStorage.getItem("viewerTheme") || "dark";
+  document.body.classList.toggle("light-theme", saved === "light");
+  themeToggle.textContent = saved === "light" ? "☀️" : "🌙";
+  document.documentElement.style.setProperty("--term-font-scale", appState.glossaryScale);
+}
+
+function pushView(nextView, payload = {}) {
+  appState.history.push({
+    view: appState.view,
+    selectedStatus: appState.selectedStatus,
+    selectedHero: appState.selectedHero,
+    selectedLetter: appState.selectedLetter
+  });
+
+  appState.view = nextView;
+  appState.selectedStatus = payload.selectedStatus ?? appState.selectedStatus ?? null;
+  appState.selectedHero = payload.selectedHero ?? null;
+  appState.selectedLetter = payload.selectedLetter ?? null;
+
+  render();
+}
+
+function goBack() {
+  if (!appState.history.length) return;
+  closeTermModal();
+
+  const prev = appState.history.pop();
+  appState.view = prev.view;
+  appState.selectedStatus = prev.selectedStatus;
+  appState.selectedHero = prev.selectedHero;
+  appState.selectedLetter = prev.selectedLetter;
+  render();
+}
+
+function render() {
+  backButton.classList.toggle("hidden", appState.view === "home");
+
+  if (appState.view === "home") {
+    renderHome();
+    return;
+  }
+  if (appState.view === "heroes-status") {
+    renderHeroesStatus();
+    return;
+  }
+  if (appState.view === "heroes-list") {
+    renderHeroesList();
+    return;
+  }
+  if (appState.view === "hero-card") {
+    renderHeroCard();
+    return;
+  }
+  if (appState.view === "glossary") {
+    renderGlossary();
+    return;
+  }
+}
+
+function renderHome() {
+  appView.innerHTML = `
+    <section class="screen home-screen">
+      <div class="home-card">
+        <h1 class="home-title">
+          <span class="home-title-line">Земли былых легенд</span>
+          <span class="home-title-line">Молчание богов</span>
+        </h1>
+        <p class="home-subtitle">Выбери раздел, чтобы открыть справку по героям или словарь терминов.</p>
+        <div class="menu-stack">
+          <button class="menu-button" id="openHeroes" type="button">Герои</button>
+          <button class="menu-button" id="openGlossary" type="button">Словарь</button>
+        </div>
+      </div>
+    </section>
+  `;
+
+  document.getElementById("openHeroes").addEventListener("click", () => {
+    pushView("heroes-status", { selectedStatus: null, selectedHero: null });
+  });
+
+  document.getElementById("openGlossary").addEventListener("click", () => {
+    pushView("glossary", { selectedLetter: null, selectedHero: null, selectedStatus: null });
+  });
+}
+
+function renderHeroesStatus() {
+  const statusSections = [
+    { key: "alive", title: STATUS_LABELS.alive, desc: "Персонажи, чья история ещё продолжается" },
+    { key: "dead",  title: STATUS_LABELS.dead,  desc: "Павшие герои, чья история уже завершилась" },
+    { key: "unknown", title: STATUS_LABELS.unknown, desc: "Те, чья судьба пока остаётся тайной" },
+  ];
+
+  const sectionsMarkup = statusSections.map(({ key, title, desc }) => {
+    const heroes = getHeroesByStatus(key);
+    const listHtml = heroes.length
+      ? heroes.map(hero => `
+          <button class="hero-list-button" type="button" data-hero-name="${escapeHtml(hero.name)}" data-status="${key}">
+            ${escapeHtml(hero.name)}
+          </button>
+        `).join("")
+      : '<div class="empty-state">В этой категории пока нет персонажей.</div>';
+    return `
+      <div class="heroes-group">
+        <h2 class="group-title">${escapeHtml(title)}</h2>
+        <p class="group-desc">${escapeHtml(desc)}</p>
+        <div class="hero-list">${listHtml}</div>
+      </div>
+    `;
+  }).join("");
+
+  appView.innerHTML = `
+    <section class="screen">
+      <h1 class="screen-title">Герои</h1>
+      <div class="heroes-groups-container">${sectionsMarkup}</div>
+    </section>
+  `;
+
+  document.querySelectorAll("[data-hero-name]").forEach(button => {
+    button.addEventListener("click", () => {
+      const status = button.dataset.status;
+      const name = button.dataset.heroName;
+      const heroesList = getHeroesByStatus(status);
+      const hero = heroesList.find(item => item.name === name);
+      if (hero) pushView("hero-card", { selectedHero: hero });
+    });
+  });
+}
+
+function renderHeroesList() {
+  const status = appState.selectedStatus || "alive";
+  const heroes = getHeroesByStatus(status);
+
+  appView.innerHTML = `
+    <section class="screen hero-list-screen">
+      <h1 class="screen-title">${STATUS_LABELS[status]}</h1>
+      <p class="screen-subtitle">Выбери персонажа, чтобы открыть его карточку.</p>
+      <div class="hero-list">
+        ${
+          heroes.length
+            ? heroes.map(hero => `
+                <button class="hero-list-button" type="button" data-hero-name="${escapeHtml(hero.name)}">
+                  ${escapeHtml(hero.name)}
+                </button>
+              `).join("")
+            : '<div class="empty-state">В этой категории пока нет персонажей.</div>'
+        }
+      </div>
+    </section>
+  `;
+
+  document.querySelectorAll("[data-hero-name]").forEach(button => {
+    button.addEventListener("click", () => {
+      const hero = heroes.find(item => item.name === button.dataset.heroName);
+      if (hero) pushView("hero-card", { selectedHero: hero });
+    });
+  });
+}
+
+function renderHeroCard() {
+  const hero = appState.selectedHero;
+  if (!hero) { goBack(); return; }
+
+  const portraitUrl = getPortraitUrl(hero.portrait);
+  const titleClass = getTitleSizeClass(hero.name || "");
+  const portraitMarkup = portraitUrl
+    ? `<img class="hero-portrait" src="${portraitUrl}" alt="${escapeHtml(hero.name || "")}" onerror="this.closest('.hero-portrait-frame').innerHTML='<div class=&quot;hero-portrait-fallback&quot;>Портрет недоступен</div>';">`
+    : `<div class="hero-portrait-fallback">Портрет недоступен</div>`;
+
+  appView.innerHTML = `
+    <section class="screen hero-card-screen">
+      <article class="hero-card">
+        <div class="hero-card-inner">
+          <div class="hero-left">
+            <h1 class="hero-title ${titleClass}">${escapeHtml(hero.name || "")}</h1>
+            <div class="hero-portrait-frame">${portraitMarkup}</div>
+          </div>
+          <div class="hero-right">
+            <div class="hero-badges">
+              ${renderBadge("Здоровье", hero.hp)}
+              ${renderBadge("Броня", hero.brn)}
+              ${renderBadge("Уровень", hero.urv)}
+            </div>
+            <div class="hero-meta">
+              <div class="hero-meta-label">Раса</div>
+              <div class="hero-meta-value">${escapeHtml(hero.race || "—")}</div>
+              <div class="hero-meta-label">Класс</div>
+              <div class="hero-meta-value">${escapeHtml(hero.class || "—")}</div>
+              <div class="hero-meta-label">Архетип</div>
+              <div class="hero-meta-value">${escapeHtml(hero.archetype || "—")}</div>
+            </div>
+            <div class="hero-stats-grid">
+              ${renderStatLine("СИЛ", hero.stats?.["СИЛ"])}
+              ${renderStatLine("ИНТ", hero.stats?.["ИНТ"])}
+              ${renderStatLine("ЛОВ", hero.stats?.["ЛОВ"])}
+              ${renderStatLine("МУД", hero.stats?.["МУД"])}
+              ${renderStatLine("ВЫН", hero.stats?.["ВЫН"])}
+              ${renderStatLine("ХАР", hero.stats?.["ХАР"])}
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+  `;
+}
+
+function renderBadge(label, value) {
+  return `
+    <div class="hero-badge">
+      <span class="hero-badge-label">${escapeHtml(label)}</span>
+      <span class="hero-badge-value">${escapeHtml(value ?? 0)}</span>
+    </div>
+  `;
+}
+
+function renderStatLine(label, value) {
+  return `
+    <div class="hero-stat-line">
+      <span class="hero-stat-name">${escapeHtml(label)}</span>
+      <span class="hero-stat-value">${escapeHtml(value ?? 0)}</span>
+    </div>
+  `;
+}
+
+function renderGlossary() {
+  const letters = Object.keys(glossaryData).sort((a, b) => a.localeCompare(b, "ru-RU"));
+  const selectedLetter = appState.selectedLetter && letters.includes(appState.selectedLetter)
+    ? appState.selectedLetter
+    : null;
+
+  const terms = getFilteredTerms(selectedLetter, "");
+
+  appView.innerHTML = `
+    <section class="screen">
+      <h1 class="screen-title">Словарь</h1>
+      <div class="glossary-toolbar">
+        <input id="searchInput" class="search-input" type="text" placeholder="Поиск по терминам и описаниям">
+        <div class="alpha-grid">
+          <button class="alpha-button ${selectedLetter === null ? "active" : ""}" type="button" data-letter="">Все</button>
+          ${letters.map(letter => `
+            <button class="alpha-button ${selectedLetter === letter ? "active" : ""}" type="button" data-letter="${letter}">
+              ${letter}
+            </button>
+          `).join("")}
+        </div>
+      </div>
+      <div id="glossaryTerms" class="terms-list">${renderTermButtons(terms)}</div>
+    </section>
+  `;
+
+  const searchInput = document.getElementById("searchInput");
+  const glossaryTerms = document.getElementById("glossaryTerms");
+
+  document.querySelectorAll("[data-letter]").forEach(button => {
+    button.addEventListener("click", () => {
+      appState.selectedLetter = button.dataset.letter || null;
+      renderGlossary();
+    });
+  });
+
+  searchInput.addEventListener("input", () => {
+    const list = getFilteredTerms(appState.selectedLetter, searchInput.value.trim());
+    glossaryTerms.innerHTML = renderTermButtons(list);
+    bindTermButtons();
+  });
+
+  bindTermButtons();
+}
+
+function bindTermButtons() {
+  document.querySelectorAll("[data-term-index]").forEach(button => {
+    button.addEventListener("click", () => {
+      const term = findTermByIndex(button.dataset.termIndex);
+      if (term) openTermModal(term.term, term.desc);
+    });
+  });
+}
+
+function renderTermButtons(terms) {
+  if (!terms.length) {
+    return '<div class="empty-state">По этому запросу ничего не найдено.</div>';
+  }
+  return terms.map(item => `
+    <button class="term-button" type="button" data-term-index="${item.index}">
+      ${escapeHtml(item.term)}
+    </button>
+  `).join("");
+}
+
+function getFilteredTerms(letterFilter, query) {
+  const normalizedQuery = query.toLowerCase();
+  const entries = [];
+
+  Object.keys(glossaryData)
+    .sort((a, b) => a.localeCompare(b, "ru-RU"))
+    .forEach(letter => {
+      if (letterFilter && letter !== letterFilter) return;
+      let localCounter = 0;
+      (glossaryData[letter] || []).forEach(item => {
+        const term = item.term || "";
+        const desc = item.desc || "";
+        const matches =
+          !normalizedQuery ||
+          term.toLowerCase().includes(normalizedQuery) ||
+          desc.toLowerCase().includes(normalizedQuery);
+        if (matches) {
+          entries.push({ ...item, index: `${letter}::${localCounter}` });
+        }
+        localCounter += 1;
+      });
+    });
+  return entries;
+}
+
+function findTermByIndex(index) {
+  const parts = String(index).split("::");
+  if (parts.length !== 2) return null;
+  const [letter, idxStr] = parts;
+  const localIndex = parseInt(idxStr, 10);
+  if (!glossaryData || !glossaryData[letter] || isNaN(localIndex)) return null;
+  return glossaryData[letter][localIndex] || null;
+}
+
+function openTermModal(title, desc) {
+  termModalTitle.textContent = title || "";
+  termModalBody.textContent = desc || "";
+  termModal.classList.remove("hidden");
+  termModal.setAttribute("aria-hidden", "false");
+}
+
+function closeTermModal() {
+  termModal.classList.add("hidden");
+  termModal.setAttribute("aria-hidden", "true");
+}
+
+function getHeroesByStatus(status) {
+  return heroesData
+    .filter(hero => (hero.status || "alive") === status)
+    .slice()
+    .sort((a, b) => (a.name || "").localeCompare(b.name || "", "ru-RU"));
+}
+
+function getPortraitUrl(path) {
+  if (!path) return "";
+  return /^(https?:|data:)/.test(path) ? path : `${ASSETS_BASE_URL}${path}`;
+}
+
+function getTitleSizeClass(name) {
+  const length = String(name || "").length;
+  if (length >= 15) return "title-long";
+  if (length >= 10) return "title-medium";
+  return "title-short";
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
