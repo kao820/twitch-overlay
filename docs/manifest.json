@@ -11,7 +11,11 @@
       "html": "index.html",
       "js": "viewer.js",
       "css": "styles.css",
-      "json": ["glossary.json", "heroes.json", "settings.json"],
+      "json": [
+        "glossary.json",
+        "heroes.json",
+        "settings.json"
+      ],
       "width": 450,
       "height": 500
     }
