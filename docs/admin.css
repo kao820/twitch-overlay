@@ -1,11 +1,192 @@
 /*
- * Стиль административной панели.
+ * LRS Overlay Admin Styles
  *
- * Для сохранения внешнего вида из стартового набора сначала включите
- * оригинальный файл admin.css из предыдущей рабочей версии. Затем ниже
- * добавляйте свои переопределения и новые правила. Этот файл сейчас
- * содержит только заглушку: без базового CSS внешний вид может отличаться
- * от оригинального.
+ * This stylesheet defines the appearance of the administration panel
+ * (editor.html).  Like the overlay, it uses CSS variables for theme
+ * colors and supports dark/light modes via the `.light-theme` class
+ * on the <body> element.  The layout is simplified to keep forms
+ * easy to read and navigate on both desktop and mobile devices.
  */
 
-/* Переопределения для админки можно добавить ниже. Пока новые правила не требуются. */
+/* Inherit the same variables as the overlay */
+:root {
+  --admin-background: var(--background);
+  --admin-panel: var(--panel-color);
+  --admin-card: var(--card-color);
+  --admin-text: var(--text);
+  --admin-accent: var(--accent);
+  --admin-border-radius: var(--border-radius);
+}
+
+body {
+  background-color: var(--admin-background);
+  color: var(--admin-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header of admin panel */
+.admin-header {
+  background-color: var(--admin-panel);
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-header h1 {
+  font-size: 1.4rem;
+  margin: 0;
+}
+
+.admin-header .icon-button {
+  font-size: 1.2rem;
+}
+
+/* Tab navigation */
+.tab-bar {
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: var(--admin-panel);
+}
+
+.tab-button {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  text-align: center;
+  background: none;
+  border: none;
+  color: var(--admin-text);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color var(--transition-duration) ease,
+              color var(--transition-duration) ease;
+  border-bottom: 2px solid transparent;
+}
+
+.tab-button.active {
+  background-color: var(--admin-card);
+  border-color: var(--admin-accent);
+  color: #fff;
+}
+
+.tab-button:hover:not(.active) {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Main editor area */
+.editor-container {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  background-color: var(--admin-background);
+}
+
+.editor-section {
+  background-color: var(--admin-card);
+  border-radius: var(--admin-border-radius);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.editor-section h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Form elements */
+.form-group {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  margin-bottom: 0.3rem;
+  opacity: 0.8;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  background-color: var(--admin-panel);
+  color: var(--admin-text);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--admin-border-radius);
+  padding: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* List and editor layout */
+.list-container {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+  background-color: var(--admin-panel);
+  border-radius: var(--admin-border-radius);
+  padding: 0.5rem;
+}
+
+.list-item {
+  padding: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: background-color var(--transition-duration) ease;
+}
+
+.list-item:last-child {
+  border-bottom: none;
+}
+
+.list-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.list-item.active {
+  background-color: var(--admin-accent);
+  color: #fff;
+}
+
+/* Save button */
+.save-button {
+  background-color: var(--admin-accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--admin-border-radius);
+  padding: 0.6rem 1rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: opacity var(--transition-duration) ease;
+}
+
+.save-button:hover {
+  opacity: 0.85;
+}
+
+/* Utility classes */
+.hidden {
+  display: none !important;
+}
+
+@media (max-width: 600px) {
+  .tab-button {
+    font-size: 0.9rem;
+  }
+  .admin-header h1 {
+    font-size: 1.2rem;
+  }
+}
