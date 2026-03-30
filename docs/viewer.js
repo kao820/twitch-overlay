@@ -1,7 +1,6 @@
-// LRS Overlay — общая логика для показа героев и словаря.
-// Этот файл совместим с Content Security Policy Twitch: никаких inline onerror и других
-// встроенных обработчиков, только event listeners. Если старый манифест ищет scripts.js,
-// просто скопируйте этот файл под тем именем, чтобы расширение подтягивало обновления.
+// LRS Overlay — совместимый с Twitch код (без inline-скриптов).
+// Этот файл загружает данные, рисует домашний экран, список героев, карточки и словарь.
+// Используйте одну и ту же версию в viewer.js и scripts.js.
 
 const appView = document.getElementById("appView");
 const backButton = document.getElementById("backButton");
@@ -34,6 +33,7 @@ let heroesData = [];
 let glossaryData = {};
 let settingsData = {};
 
+// Настройка базовых путей: локально — папка data/, на Twitch — GitHub Pages.
 const isProd = window.location.hostname.includes("ext-twitch.tv");
 const DATA_BASE_URL = isProd
   ? "https://kao820.github.io/twitch-overlay/data/"
@@ -184,13 +184,11 @@ function renderHeroesStatus() {
     { key: "dead",  title: STATUS_LABELS.dead,  desc: "Павшие герои, чья история уже завершилась" },
     { key: "unknown", title: STATUS_LABELS.unknown, desc: "Те, чья судьба пока остаётся тайной" },
   ];
-
   const sectionsMarkup = statusSections.map(({ key, title, desc }) => {
     const heroes = getHeroesByStatus(key);
     const listHtml = heroes.length
       ? heroes.map(hero => `
-          <button class="hero-list-button" type="button"
-                  data-hero-name="${escapeHtml(hero.name)}" data-status="${key}">
+          <button class="hero-list-button" type="button" data-hero-name="${escapeHtml(hero.name)}" data-status="${key}">
             ${escapeHtml(hero.name)}
           </button>
         `).join("")
@@ -203,14 +201,12 @@ function renderHeroesStatus() {
       </div>
     `;
   }).join("");
-
   appView.innerHTML = `
     <section class="screen">
       <h1 class="screen-title">Герои</h1>
       <div class="heroes-groups-container">${sectionsMarkup}</div>
     </section>
   `;
-
   document.querySelectorAll("[data-hero-name]").forEach(button => {
     button.addEventListener("click", () => {
       const status = button.dataset.status;
@@ -255,7 +251,7 @@ function renderHeroCard() {
   if (!hero) { goBack(); return; }
   const portraitUrl = getPortraitUrl(hero.portrait);
   const titleClass = getTitleSizeClass(hero.name || "");
-  // Содержимое портрета: без inline onerror, обработчик добавим позже.
+  // Без inline onerror
   const portraitMarkup = portraitUrl
     ? `<img class="hero-portrait" src="${portraitUrl}" alt="${escapeHtml(hero.name || "")}">`
     : `<div class="hero-portrait-fallback">Портрет недоступен</div>`;
@@ -294,7 +290,7 @@ function renderHeroCard() {
       </article>
     </section>
   `;
-  // Назначаем обработчик ошибки для портрета после вставки в DOM.
+  // Добавляем обработчик ошибки для портрета через JS.
   const portraitEl = appView.querySelector('.hero-card-screen .hero-portrait');
   if (portraitEl) {
     portraitEl.addEventListener('error', () => {
