@@ -388,35 +388,6 @@ body.light-theme .hero-card {
   background: var(--card-color);
 }
 
-/*
- * В светлой теме метаданные героя (раса, класс, архетип) должны иметь
- * тот же оттенок, что и основное имя героя. По умолчанию метаданные
- * наследуют цвет текста (тёмный), из‑за чего в светлой теме они
- * выглядят слишком серыми. Устанавливаем для значений метаданных
- * золотистый цвет.
- */
-body.light-theme .hero-meta-value {
-  color: var(--gold);
-}
-
-/*
- * В светлой теме фон и текст на бейджах (здоровье, броня, уровень)
- * должны выглядеть светлее и гармонировать с остальной карточкой.
- * Заменяем полупрозрачный тёмный фон на фон панели и корректируем
- * цвет текста.
- */
-body.light-theme .hero-badge {
-  background:
-    linear-gradient(180deg, rgba(157,93,72,0.18), rgba(255,255,255,0.015)),
-    var(--panel-color);
-}
-body.light-theme .hero-badge-label {
-  color: var(--muted);
-}
-body.light-theme .hero-badge-value {
-  color: var(--accent);
-}
-
 .hero-card::before,
 .hero-card::after {
   content: "";
@@ -865,5 +836,16 @@ body.light-theme .hero-badge-value {
 
   .privacy-link {
     display: none;
+  }
+
+  /* Ensure the three hero stat badges fit on one line on small screens */
+  .hero-badges {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .hero-badge {
+    flex: 1 1 0;
+    min-width: 0;
   }
 }
