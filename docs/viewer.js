@@ -223,7 +223,7 @@ function renderHeroesStatus() {
   });
 }
 
-// Экран списка героев (если выбран только один статус)
+// Экран списка героев (по статусу)
 function renderHeroesList() {
   const status = appState.selectedStatus || "alive";
   const heroes = getHeroesByStatus(status);
@@ -390,7 +390,8 @@ function getFilteredTerms(letterFilter, query) {
     (glossaryData[letter] || []).forEach(item => {
       const term = item.term || "";
       const desc = item.desc || "";
-      const matches = !normalizedQuery ||
+      const matches =
+        !normalizedQuery ||
         term.toLowerCase().includes(normalizedQuery) ||
         desc.toLowerCase().includes(normalizedQuery);
       if (matches) {
