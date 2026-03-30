@@ -1,33 +1,51 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>LRS Overlay</title>
+  <!-- Основные стили для оверлея -->
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
 </head>
 <body>
-  <div id="app">
-    <header id="appHeader">
-      <button id="backButton" type="button">← Назад</button>
-      <button id="themeToggle" type="button">🌙</button>
+  <div class="app-shell">
+    <header class="app-header">
+      <!-- Кнопка возврата. Скрыта на главном экране -->
+      <button id="backButton" class="icon-button hidden" type="button" aria-label="Назад">↩</button>
+      <div class="header-spacer"></div>
+      <!-- Переключатель темы. Содержимое меняется в viewer.js -->
+      <button id="themeToggle" class="icon-button" type="button" title="Переключить тему">🌙</button>
     </header>
-    <main id="appView"></main>
-    <div id="termModal" class="modal hidden" aria-hidden="true">
-      <div class="modal-backdrop" id="termModalBackdrop"></div>
-      <div class="modal-content">
-        <button class="modal-close" id="termModalClose">×</button>
-        <h2 id="termModalTitle"></h2>
-        <p id="termModalBody"></p>
-        <div class="modal-controls">
-          <button type="button" id="fontDown">A−</button>
-          <button type="button" id="fontUp">A+</button>
+    <!-- Основная область, куда будет рендериться содержимое -->
+    <main id="appView" class="app-view" aria-live="polite"></main>
+  </div>
+  <!-- Модальное окно для отображения терминов словаря -->
+  <div id="termModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" id="termModalBackdrop"></div>
+    <section class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h2 id="termModalTitle" class="modal-title"></h2>
+        </div>
+        <div class="modal-actions">
+          <span class="font-tools-label">Аа</span>
+          <!-- Кнопки изменения масштаба текста в модальном окне -->
+          <button id="fontDown" class="tool-button" type="button" aria-label="Уменьшить текст">↓</button>
+          <button id="fontUp" class="tool-button" type="button" aria-label="Увеличить текст">↑</button>
+          <button id="termModalClose" class="tool-button close-tool" type="button" aria-label="Закрыть">✕</button>
         </div>
       </div>
-    </div>
+      <div id="termModalBody" class="modal-body"></div>
+    </section>
   </div>
+  <!-- Ссылка на политику конфиденциальности -->
+  <footer class="privacy-link">
+    <a href="https://kao820.github.io/twitch-overlay/privacy-policy.html" target="_blank" rel="noreferrer">Политика конфиденциальности</a>
+  </footer>
+  <!-- Скрипт помощника Twitch. Обеспечивает работу extension API. -->
   <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
-  <!-- здесь подключается scripts.js для старого манифеста -->
+  <!-- Скрипт для обратной совместимости. Этот файл совпадает с viewer.js, но служит для старых манифестов -->
   <script src="scripts.js"></script>
 </body>
 </html>
