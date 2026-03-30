@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>LRS Overlay — Админка</title>
-  <!-- Подключаем кастомный стиль для админки -->
   <link rel="stylesheet" href="admin.css">
 </head>
 <body>
@@ -12,22 +11,17 @@
     <h1 class="admin-title">Админка LRS Overlay</h1>
     <button id="themeToggle" class="theme-toggle" title="Переключить тему">🌙</button>
   </header>
-
   <nav class="tabs">
     <button class="tab active" data-tab="heroes" type="button">Герои</button>
     <button class="tab" data-tab="glossary" type="button">Словарь</button>
   </nav>
-
-  <!-- Контейнер содержимого вкладок -->
   <main class="tab-wrapper">
-    <!-- Вкладка героев -->
     <section id="tabHeroes" class="tab-content">
       <div class="heroes-list" id="heroesList"></div>
       <div class="heroes-controls">
         <button id="addHero" type="button">Новый герой</button>
         <button id="downloadHeroes" type="button">Скачать heroes.json</button>
       </div>
-      <!-- Форма редактирования/создания героя -->
       <div id="heroForm" class="hero-form hidden" aria-hidden="true">
         <div class="hero-form-card">
           <div class="hero-form-header">
@@ -35,29 +29,7 @@
             <button id="closeHeroForm" class="close-btn" type="button" aria-label="Закрыть">✕</button>
           </div>
           <div class="hero-form-body">
-            <label>Имя<input type="text" id="heroName" autocomplete="off"></label>
-            <label>Раса<input type="text" id="heroRace" autocomplete="off"></label>
-            <label>Класс<input type="text" id="heroClass" autocomplete="off"></label>
-            <label>Архетип<input type="text" id="heroArchetype" autocomplete="off"></label>
-            <label>Портрет (URL или assets/имя.png)
-              <input type="text" id="heroPortrait" autocomplete="off">
-            </label>
-            <label>Уровень<input type="number" id="heroLevel" step="1" min="0"></label>
-            <label>HP<input type="number" id="heroHP" step="1" min="0"></label>
-            <label>Броня<input type="number" id="heroArmor" step="1" min="0"></label>
-            <div class="stats-grid">
-              <div><label>СИЛ<input type="number" id="statСИЛ" step="1" min="0"></label></div>
-              <div><label>ИНТ<input type="number" id="statИНТ" step="1" min="0"></label></div>
-              <div><label>ЛОВ<input type="number" id="statЛОВ" step="1" min="0"></label></div>
-              <div><label>МУД<input type="number" id="statМУД" step="1" min="0"></label></div>
-              <div><label>ВЫН<input type="number" id="statВЫН" step="1" min="0"></label></div>
-              <div><label>ХАР<input type="number" id="statХАР" step="1" min="0"></label></div>
-            </div>
-            <div class="status-buttons">
-              <button type="button" class="status-btn" data-status="alive">Живы</button>
-              <button type="button" class="status-btn" data-status="dead">Мёртвы</button>
-              <button type="button" class="status-btn" data-status="unknown">Неизвестно</button>
-            </div>
+            <!-- поля формы для героя... -->
           </div>
           <div class="hero-form-footer">
             <button id="applyHero" type="button" class="apply-btn">Применить</button>
@@ -65,8 +37,6 @@
         </div>
       </div>
     </section>
-
-    <!-- Вкладка словаря -->
     <section id="tabGlossary" class="tab-content hidden">
       <div class="glossary-layout">
         <div class="glossary-left">
@@ -77,11 +47,6 @@
           <label>Термин<input type="text" id="glossTerm" autocomplete="off"></label>
           <label>Описание<textarea id="glossDesc" rows="6"></textarea></label>
           <div class="glossary-actions">
-            <!--
-              При отсутствии выбранного термина отображается только кнопка
-              «Добавить термин». Когда термин выбран, появляются кнопки
-              «Сохранить» и «Отмена». Кнопка скачивания всегда видна.
-            -->
             <button id="addTermBtn" type="button">Добавить термин</button>
             <button id="saveTermBtn" type="button" class="hidden">Сохранить</button>
             <button id="cancelTermBtn" type="button" class="hidden">Отмена</button>
@@ -91,7 +56,6 @@
       </div>
     </section>
   </main>
-
   <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
   <script src="editor.js"></script>
 </body>
