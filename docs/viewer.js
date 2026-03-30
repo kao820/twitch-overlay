@@ -172,12 +172,6 @@ function render() {
 }
 
 function renderHome() {
-  /*
-   * Домашний экран отображает название проекта двумя строками:
-   * «Земли былых легенд» на первой и «Молчание богов» на второй. Ниже находится
-   * подпись с предложением выбрать раздел. Мы используем две вложенные
-   * <span> для разделения строк и сохраняем стилизацию из CSS.
-   */
   appView.innerHTML = `
     <section class="screen home-screen">
       <div class="home-card">
@@ -204,13 +198,6 @@ function renderHome() {
 }
 
 function renderHeroesStatus() {
-  /*
-   * Экран со списком героев объединяет выбор статуса и отображение самих
-   * персонажей. Для каждого из трёх статусов («alive», «dead», «unknown»)
-   * отображается заголовок, краткое описание и список кнопок с именами.
-   * Нажатие на имя открывает карточку персонажа, минуя промежуточный
-   * экран. Если персонажей в категории нет, отображается сообщение.
-   */
   const statusSections = [
     {
       key: "alive",
@@ -262,7 +249,6 @@ function renderHeroesStatus() {
     </section>
   `;
 
-  // Назначаем обработчики на кнопки героев
   document.querySelectorAll("[data-hero-name]").forEach((button) => {
     button.addEventListener("click", () => {
       const status = button.dataset.status;
@@ -474,12 +460,6 @@ function getFilteredTerms(letterFilter, query) {
 }
 
 function findTermByIndex(index) {
-  /*
-   * Идентификатор термина состоит из буквы и локального индекса через
-   * двойное двоеточие: «Б::0». Ранее поиск производился по глобальному
-   * счётчику, что ломало работу фильтра по букве. Теперь парсим букву
-   * и локальный индекс и обращаемся напрямую к массиву glossaryData[letter].
-   */
   const serial = String(index);
   const parts = serial.split("::");
   if (parts.length !== 2) return null;
@@ -517,11 +497,6 @@ function getPortraitUrl(path) {
 
 function getTitleSizeClass(name) {
   const length = String(name || "").length;
-  /*
-   * Корректируем пороги для выбора размера заголовка. Длинные имена
-   * становятся меньше при длине 15 символов, а средние — от 10. Это
-   * помогает вместить имя в одну строку без переноса.
-   */
   if (length >= 15) return "title-long";
   if (length >= 10) return "title-medium";
   return "title-short";
