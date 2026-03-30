@@ -1,4 +1,8 @@
 // LRS Overlay — совместимый с Twitch код (без inline-скриптов).
+// Этот файл содержит логику отображения героев, глоссария и обработку
+// темной/светлой темы. Он не использует инлайновых обработчиков и
+// совместим с политикой Content Security Policy Twitch.
+
 const appView = document.getElementById("appView");
 const backButton = document.getElementById("backButton");
 const themeToggle = document.getElementById("themeToggle");
@@ -10,12 +14,14 @@ const termModalClose = document.getElementById("termModalClose");
 const fontUp = document.getElementById("fontUp");
 const fontDown = document.getElementById("fontDown");
 
+// Метки статусов для локализации
 const STATUS_LABELS = {
   alive: "Живы",
   dead: "Мёртвы",
   unknown: "Неизвестно",
 };
 
+// Глобальное состояние приложения
 const appState = {
   view: "home",
   selectedStatus: null,
@@ -25,10 +31,13 @@ const appState = {
   history: [],
 };
 
+// Данные о героях и словаре будут загружаться из JSON
 let heroesData = [];
 let glossaryData = {};
 let settingsData = {};
 
+// Определяем базовые URL для данных и ассетов. В продакшене
+// используется GitHub Pages, локально — папка data/.
 const isProd = window.location.hostname.includes("ext-twitch.tv");
 const DATA_BASE_URL = isProd
   ? "https://kao820.github.io/twitch-overlay/data/"
@@ -37,6 +46,7 @@ const ASSETS_BASE_URL = isProd
   ? "https://kao820.github.io/twitch-overlay/"
   : "";
 
+// Начало работы: применяем тему, назначаем события, загружаем данные
 init();
 
 async function init() {
@@ -46,6 +56,7 @@ async function init() {
   render();
 }
 
+// Назначаем события, которые не зависят от состояния
 function bindStaticEvents() {
   backButton.addEventListener("click", goBack);
   themeToggle.addEventListener("click", () => {
@@ -68,6 +79,7 @@ function bindStaticEvents() {
   });
 }
 
+// Загружаем JSON данные для героев, словаря и настроек
 async function loadData() {
   const [heroes, glossary, settings] = await Promise.all([
     loadJSON("heroes.json", []),
@@ -80,6 +92,7 @@ async function loadData() {
   applySettings();
 }
 
+// Универсальный загрузчик JSON с обработкой ошибок
 async function loadJSON(path, fallback) {
   try {
     const response = await fetch(`${DATA_BASE_URL}${path}`, { cache: "no-store" });
@@ -90,12 +103,14 @@ async function loadJSON(path, fallback) {
   }
 }
 
+// Применяем пользовательские настройки цветов из settings.json
 function applySettings() {
   const root = document.documentElement.style;
   if (settingsData?.textColor) root.setProperty("--text", settingsData.textColor);
   if (settingsData?.panelBg) root.setProperty("--panel-color", settingsData.panelBg);
 }
 
+// Применяем тему из localStorage (темная/светлая)
 function applyTheme() {
   const saved = localStorage.getItem("viewerTheme") || "dark";
   document.body.classList.toggle("light-theme", saved === "light");
@@ -103,6 +118,7 @@ function applyTheme() {
   document.documentElement.style.setProperty("--term-font-scale", appState.glossaryScale);
 }
 
+// Переключение между экранами (домашний, список статусов, список героев, карточка героя, словарь)
 function pushView(nextView, payload = {}) {
   appState.history.push({
     view: appState.view,
@@ -117,6 +133,7 @@ function pushView(nextView, payload = {}) {
   render();
 }
 
+// Возврат к предыдущему экрану по истории
 function goBack() {
   if (!appState.history.length) return;
   closeTermModal();
@@ -128,6 +145,7 @@ function goBack() {
   render();
 }
 
+// Основной рендерер: выбирает нужный экран
 function render() {
   backButton.classList.toggle("hidden", appState.view === "home");
   if (appState.view === "home") { renderHome(); return; }
@@ -137,6 +155,7 @@ function render() {
   if (appState.view === "glossary") { renderGlossary(); return; }
 }
 
+// Домашний экран
 function renderHome() {
   appView.innerHTML = `
     <section class="screen home-screen">
@@ -156,6 +175,7 @@ function renderHome() {
   document.getElementById("openGlossary").addEventListener("click", () => pushView("glossary"));
 }
 
+// Экран со списком групп героев (Живы/Мёртвы/Неизвестно)
 function renderHeroesStatus() {
   const statusSections = [
     { key: "alive", title: STATUS_LABELS.alive, desc: "Персонажи, чья история ещё продолжается" },
@@ -183,6 +203,7 @@ function renderHeroesStatus() {
   });
 }
 
+// Экран списка героев для выбранного статуса
 function renderHeroesList() {
   const status = appState.selectedStatus || "alive";
   const heroes = getHeroesByStatus(status);
@@ -200,6 +221,7 @@ function renderHeroesList() {
   });
 }
 
+// Карточка выбранного героя
 function renderHeroCard() {
   const hero = appState.selectedHero;
   if (!hero) { goBack(); return; }
@@ -248,14 +270,17 @@ function renderHeroCard() {
   }
 }
 
+// Рендер одной бейдж‑панели
 function renderBadge(label, value) {
   return `<div class="hero-badge"><span class="hero-badge-label">${escapeHtml(label)}</span><span class="hero-badge-value">${escapeHtml(value ?? 0)}</span></div>`;
 }
 
+// Рендер строки характеристик
 function renderStatLine(label, value) {
   return `<div class="hero-stat-line"><span class="hero-stat-name">${escapeHtml(label)}</span><span class="hero-stat-value">${escapeHtml(value ?? 0)}</span></div>`;
 }
 
+// Экран словаря
 function renderGlossary() {
   const letters = Object.keys(glossaryData).sort((a, b) => a.localeCompare(b, "ru-RU"));
   const selectedLetter = appState.selectedLetter && letters.includes(appState.selectedLetter) ? appState.selectedLetter : null;
@@ -288,6 +313,7 @@ function renderGlossary() {
   bindTermButtons();
 }
 
+// Назначаем событие на кнопки терминов
 function bindTermButtons() {
   document.querySelectorAll("[data-term-index]").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -297,11 +323,13 @@ function bindTermButtons() {
   });
 }
 
+// Генерируем список кнопок терминов
 function renderTermButtons(terms) {
   if (!terms.length) return '<div class="empty-state">По этому запросу ничего не найдено.</div>';
   return terms.map(item => `<button class="term-button" data-term-index="${item.index}">${escapeHtml(item.term)}</button>`).join("");
 }
 
+// Фильтруем термин по букве и строке поиска
 function getFilteredTerms(letterFilter, query) {
   const norm = query.toLowerCase();
   const entries = [];
@@ -318,6 +346,7 @@ function getFilteredTerms(letterFilter, query) {
   return entries;
 }
 
+// Поиск термина по индексу (буква::номер)
 function findTermByIndex(index) {
   const parts = String(index).split("::");
   if (parts.length !== 2) return null;
@@ -327,6 +356,7 @@ function findTermByIndex(index) {
   return (glossaryData[letter] || [])[idx] || null;
 }
 
+// Открываем модальное окно с термином
 function openTermModal(title, desc) {
   termModalTitle.textContent = title || "";
   termModalBody.textContent = desc || "";
@@ -334,20 +364,24 @@ function openTermModal(title, desc) {
   termModal.setAttribute("aria-hidden", "false");
 }
 
+// Закрываем модальное окно
 function closeTermModal() {
   termModal.classList.add("hidden");
   termModal.setAttribute("aria-hidden", "true");
 }
 
+// Получаем героев по статусу и сортируем по имени
 function getHeroesByStatus(status) {
   return heroesData.filter(h => (h.status || "alive") === status).slice().sort((a, b) => (a.name || "").localeCompare(b.name || "", "ru-RU"));
 }
 
+// Получаем URL портрета, добавляя базовый путь для локальных ассетов
 function getPortraitUrl(path) {
   if (!path) return "";
   return /^(https?:|data:)/.test(path) ? path : `${ASSETS_BASE_URL}${path}`;
 }
 
+// Определяем размер заголовка героя в зависимости от длины имени
 function getTitleSizeClass(name) {
   const len = String(name || "").length;
   if (len >= 15) return "title-long";
@@ -355,6 +389,7 @@ function getTitleSizeClass(name) {
   return "title-short";
 }
 
+// Экранируем HTML, чтобы предотвратить XSS
 function escapeHtml(value) {
   return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 }
