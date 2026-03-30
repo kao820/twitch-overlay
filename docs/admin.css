@@ -1,11 +1,11 @@
-/* Import upstream admin styles from the original repository. By importing
- * rather than duplicating the entire file, we can keep the admin
- * interface visually consistent while staying within repository size
- * limits. If further customization is needed, append additional CSS rules
- * below.
+/*
+ * Стиль административной панели.
+ *
+ * Для сохранения внешнего вида из стартового набора сначала включите
+ * оригинальный файл admin.css из предыдущей рабочей версии. Затем ниже
+ * добавляйте свои переопределения и новые правила. Этот файл сейчас
+ * содержит только заглушку: без базового CSS внешний вид может отличаться
+ * от оригинального.
  */
 
-@import url("https://kao820.github.io/twitch-overlay/docs/admin.css");
-
-/* Additional overrides for admin can be placed here. Currently, we rely
-   solely on the upstream styles. */
+/* Переопределения для админки можно добавить ниже. Пока новые правила не требуются. */
