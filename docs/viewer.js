@@ -1,255 +1,537 @@
-// Elements
-const heroesTab = document.getElementById("heroesTab");
-const glossaryTab = document.getElementById("glossaryTab");
-const heroesSection = document.getElementById("heroesSection");
-const glossarySection = document.getElementById("glossarySection");
-const heroesList = document.getElementById("heroesList");
-
-// Detail panel elements (for both hero and glossary)
-const detailPanel = document.getElementById("detailPanel");
-const detailHeader = document.getElementById("detailHeader");
-const detailBody = document.getElementById("detailBody");
-const detailClose = document.getElementById("detailClose");
-// Theme toggle element
+const appView = document.getElementById("appView");
+const backButton = document.getElementById("backButton");
 const themeToggle = document.getElementById("themeToggle");
 
-const alphabet = document.getElementById("alphabet");
-const termsList = document.getElementById("termsList");
-const searchInput = document.getElementById("searchInput");
+const termModal = document.getElementById("termModal");
+const termModalBackdrop = document.getElementById("termModalBackdrop");
+const termModalTitle = document.getElementById("termModalTitle");
+const termModalBody = document.getElementById("termModalBody");
+const termModalClose = document.getElementById("termModalClose");
+const fontUp = document.getElementById("fontUp");
+const fontDown = document.getElementById("fontDown");
 
-// Ensure the detail panel is hidden on initial load. Some older versions of
-// the index file omitted the 'hidden' class on the detail panel, causing an
-// empty panel to appear when the page first loads. This line guarantees
-// that the panel starts hidden and only appears when a hero or term is
-// selected.
-if (detailPanel && !detailPanel.classList.contains('hidden')) {
-  detailPanel.classList.add('hidden');
-}
+const STATUS_LABELS = {
+  alive: "Живы",
+  dead: "Мёртвы",
+  unknown: "Неизвестно"
+};
 
-// Tab switching
-heroesTab.onclick = () => setTab("heroes");
-glossaryTab.onclick = () => setTab("glossary");
-// Close detail panel
-detailClose.onclick = () => detailPanel.classList.add("hidden");
+const appState = {
+  view: "home",
+  selectedStatus: null,
+  selectedHero: null,
+  selectedLetter: null,
+  glossaryScale: 1,
+  history: []
+};
 
-// Apply saved theme and set up toggle
-applyTheme();
-if (themeToggle) {
-  themeToggle.onclick = () => {
-    const isLight = document.body.classList.contains("light-theme");
-    if (isLight) {
-      document.body.classList.remove("light-theme");
-      themeToggle.textContent = "🌙";
-      localStorage.setItem("viewerTheme", "dark");
-    } else {
-      document.body.classList.add("light-theme");
-      themeToggle.textContent = "☀️";
-      localStorage.setItem("viewerTheme", "light");
-    }
-  };
-}
-
-function setTab(tab) {
-  const isHeroes = tab === "heroes";
-  heroesTab.classList.toggle("active", isHeroes);
-  glossaryTab.classList.toggle("active", !isHeroes);
-  heroesSection.classList.toggle("hidden", !isHeroes);
-  glossarySection.classList.toggle("hidden", isHeroes);
-}
-
-// Determine where to load data from. When the extension is served from
-// Twitch's CDN (production), assets and JSON must be fetched from a
-// publicly accessible host (e.g. GitHub Pages). In local test or on
-// GitHub Pages itself, files live relative to the current directory.
-const isProd = window.location.hostname.includes('ext-twitch.tv');
-const DATA_BASE_URL = isProd
-  ? 'https://kao820.github.io/twitch-overlay/data/'
-  : 'data/';
-const ASSETS_BASE_URL = isProd
-  ? 'https://kao820.github.io/twitch-overlay/'
-  : '';
-
-// Load settings (colors/background)
-fetch(`${DATA_BASE_URL}settings.json`)
-  .then((res) => res.json())
-  .then((st) => {
-    const root = document.documentElement.style;
-    if (st.textColor) root.setProperty("--text-color", st.textColor);
-    if (st.btnColor)  root.setProperty("--btn-color",  st.btnColor);
-    if (st.panelBg)   root.setProperty("--panel-bg",   st.panelBg);
-    // intentionally ignore st.background to avoid loading textures
-  });
-
-// Load heroes and render in columns by status
-fetch(`${DATA_BASE_URL}heroes.json`)
-  .then((res) => res.json())
-  .then((data) => {
-    // group by status; default to alive if no status property
-    const groups = { alive: [], dead: [], unknown: [] };
-    data.forEach((hero) => {
-      const status = hero.status || "alive";
-      if (!groups[status]) groups[status] = [];
-      groups[status].push(hero);
-    });
-    renderHeroes(groups);
-  });
-
-function renderHeroes(groups) {
-  heroesList.innerHTML = "";
-  const order = ["alive", "dead", "unknown"];
-  const labels = { alive: "Живы", dead: "Мёртвы", unknown: "Неизвестно" };
-  order.forEach((status) => {
-    const col = document.createElement("div");
-    col.className = "status-column";
-    const h = document.createElement("h4");
-    h.textContent = labels[status];
-    col.appendChild(h);
-    const listDiv = document.createElement("div");
-    // Сортируем героев в каждой колонке по алфавиту (без учёта регистра)
-    const sorted = (groups[status] || []).slice().sort((a, b) => {
-      const nameA = (a.name || '').toLocaleUpperCase();
-      const nameB = (b.name || '').toLocaleUpperCase();
-      return nameA.localeCompare(nameB, 'ru-RU');
-    });
-    sorted.forEach((hero) => {
-      const btn = document.createElement("button");
-      // Кнопка отображает только имя героя. Портрет будет показан в панели подробностей.
-      btn.textContent = hero.name;
-      btn.onclick = () => showHero(hero);
-      listDiv.appendChild(btn);
-    });
-    col.appendChild(listDiv);
-    heroesList.appendChild(col);
-  });
-}
-
-function getPortraitUrl(p) {
-  if (!p) return '';
-  // Absolute URLs or data URIs are used as-is.
-  if (/^(https?:|data:)/.test(p)) return p;
-  // Otherwise prefix with the assets base URL.
-  return ASSETS_BASE_URL + p;
-}
-
-function showHero(h) {
-  // Заполняем заголовок и содержимое панели подробностей. Используем
-  // отдельный контейнер .hero-info, чтобы портрет занимал фиксированное
-  // место слева, а текст — оставшееся пространство справа.
-  detailHeader.textContent = h.name;
-  detailBody.innerHTML = `
-    <img src="${getPortraitUrl(h.portrait)}" alt="${h.name}" class="hero-portrait">
-    <div class="hero-info">
-      <div class="hero-stats">❤ ${h.hp} 🛡 ${h.brn} ⬆ ${h.urv}</div>
-      <div><b>Раса:</b> ${h.race}</div>
-      <div><b>Класс:</b> ${h.class}</div>
-      <div class="attrs">
-        <div>СИЛ: ${h.stats?.СИЛ ?? ''}</div>
-        <div>ЛОВ: ${h.stats?.ЛОВ ?? ''}</div>
-        <div>ВЫН: ${h.stats?.ВЫН ?? ''}</div>
-        <div>ИНТ: ${h.stats?.ИНТ ?? ''}</div>
-        <div>МУД: ${h.stats?.МУД ?? ''}</div>
-        <div>ХАР: ${h.stats?.ХАР ?? ''}</div>
-      </div>
-    </div>
-  `;
-  // Показываем панель и подгоняем её положение под ширину экрана
-  detailPanel.classList.remove("hidden");
-  adjustDetailPanelForViewport();
-}
-
-// Glossary
+let heroesData = [];
 let glossaryData = {};
-fetch(`${DATA_BASE_URL}glossary.json`)
-  .then((res) => res.json())
-  .then((data) => {
-    glossaryData = data;
-    renderAlphabet();
-    renderGlossaryList();
+let settingsData = {};
+
+const isProd = window.location.hostname.includes("ext-twitch.tv");
+const DATA_BASE_URL = isProd
+  ? "https://kao820.github.io/twitch-overlay/data/"
+  : "data/";
+const ASSETS_BASE_URL = isProd
+  ? "https://kao820.github.io/twitch-overlay/"
+  : "";
+
+init();
+
+async function init() {
+  applyTheme();
+  bindStaticEvents();
+  await loadData();
+  render();
+}
+
+function bindStaticEvents() {
+  backButton.addEventListener("click", goBack);
+
+  themeToggle.addEventListener("click", () => {
+    const isLight = document.body.classList.contains("light-theme");
+    const next = isLight ? "dark" : "light";
+    localStorage.setItem("viewerTheme", next);
+    applyTheme();
   });
 
-function renderAlphabet() {
-  alphabet.innerHTML = "";
-  Object.keys(glossaryData).forEach((letter) => {
-    const btn = document.createElement("button");
-    btn.textContent = letter;
-    btn.onclick = () => renderGlossaryList(letter);
-    alphabet.appendChild(btn);
+  termModalBackdrop.addEventListener("click", closeTermModal);
+  termModalClose.addEventListener("click", closeTermModal);
+
+  fontUp.addEventListener("click", () => {
+    appState.glossaryScale = Math.min(2.2, +(appState.glossaryScale + 0.1).toFixed(1));
+    document.documentElement.style.setProperty("--term-font-scale", appState.glossaryScale);
+  });
+
+  fontDown.addEventListener("click", () => {
+    appState.glossaryScale = Math.max(0.7, +(appState.glossaryScale - 0.1).toFixed(1));
+    document.documentElement.style.setProperty("--term-font-scale", appState.glossaryScale);
+  });
+
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !termModal.classList.contains("hidden")) {
+      closeTermModal();
+    }
   });
 }
 
-function renderGlossaryList(filter) {
-  termsList.innerHTML = "";
-  const query = searchInput.value.toLowerCase();
-  const letters = filter ? [filter] : Object.keys(glossaryData);
-  letters.forEach((letter) => {
-    (glossaryData[letter] || []).forEach((item) => {
-      if (
-        item.term.toLowerCase().includes(query) ||
-        item.desc.toLowerCase().includes(query)
-      ) {
-        const div = document.createElement("div");
-        div.textContent = item.term;
-        div.onclick = () => openTerm(item);
-        termsList.appendChild(div);
+async function loadData() {
+  const [heroes, glossary, settings] = await Promise.all([
+    loadJSON("heroes.json", []),
+    loadJSON("glossary.json", {}),
+    loadJSON("settings.json", {})
+  ]);
+
+  heroesData = Array.isArray(heroes) ? heroes : [];
+  glossaryData = glossary || {};
+  settingsData = settings || {};
+
+  applySettings();
+}
+
+async function loadJSON(path, fallback) {
+  try {
+    const response = await fetch(`${DATA_BASE_URL}${path}`, { cache: "no-store" });
+    if (!response.ok) return fallback;
+    return await response.json();
+  } catch (error) {
+    return fallback;
+  }
+}
+
+function applySettings() {
+  const root = document.documentElement.style;
+  if (settingsData?.textColor) root.setProperty("--text", settingsData.textColor);
+  if (settingsData?.panelBg) root.setProperty("--panel-color", settingsData.panelBg);
+}
+
+function applyTheme() {
+  const saved = localStorage.getItem("viewerTheme") || "dark";
+  document.body.classList.toggle("light-theme", saved === "light");
+  themeToggle.textContent = saved === "light" ? "☀️" : "🌙";
+  document.documentElement.style.setProperty("--term-font-scale", appState.glossaryScale);
+}
+
+function pushView(nextView, payload = {}) {
+  appState.history.push({
+    view: appState.view,
+    selectedStatus: appState.selectedStatus,
+    selectedHero: appState.selectedHero,
+    selectedLetter: appState.selectedLetter
+  });
+
+  appState.view = nextView;
+  appState.selectedStatus = payload.selectedStatus ?? appState.selectedStatus ?? null;
+  appState.selectedHero = payload.selectedHero ?? null;
+  appState.selectedLetter = payload.selectedLetter ?? null;
+
+  render();
+}
+
+function goBack() {
+  if (!appState.history.length) return;
+
+  closeTermModal();
+
+  const prev = appState.history.pop();
+  appState.view = prev.view;
+  appState.selectedStatus = prev.selectedStatus;
+  appState.selectedHero = prev.selectedHero;
+  appState.selectedLetter = prev.selectedLetter;
+  render();
+}
+
+function render() {
+  backButton.classList.toggle("hidden", appState.view === "home");
+
+  if (appState.view === "home") {
+    renderHome();
+    return;
+  }
+
+  if (appState.view === "heroes-status") {
+    renderHeroesStatus();
+    return;
+  }
+
+  if (appState.view === "heroes-list") {
+    renderHeroesList();
+    return;
+  }
+
+  if (appState.view === "hero-card") {
+    renderHeroCard();
+    return;
+  }
+
+  if (appState.view === "glossary") {
+    renderGlossary();
+    return;
+  }
+}
+
+function renderHome() {
+  /*
+   * Домашний экран отображает название проекта двумя строками:
+   * «Земли былых легенд» на первой и «Молчание богов» на второй. Ниже находится
+   * подпись с предложением выбрать раздел. Мы используем две вложенные
+   * <span> для разделения строк и сохраняем стилизацию из CSS.
+   */
+  appView.innerHTML = `
+    <section class="screen home-screen">
+      <div class="home-card">
+        <h1 class="home-title">
+          <span class="home-title-line">Земли былых легенд</span>
+          <span class="home-title-line">Молчание богов</span>
+        </h1>
+        <p class="home-subtitle">Выбери раздел, чтобы открыть справку по героям или словарь терминов.</p>
+        <div class="menu-stack">
+          <button class="menu-button" id="openHeroes" type="button">Герои</button>
+          <button class="menu-button" id="openGlossary" type="button">Словарь</button>
+        </div>
+      </div>
+    </section>
+  `;
+
+  document.getElementById("openHeroes").addEventListener("click", () => {
+    pushView("heroes-status", { selectedStatus: null, selectedHero: null });
+  });
+
+  document.getElementById("openGlossary").addEventListener("click", () => {
+    pushView("glossary", { selectedLetter: null, selectedHero: null, selectedStatus: null });
+  });
+}
+
+function renderHeroesStatus() {
+  /*
+   * Экран со списком героев объединяет выбор статуса и отображение самих
+   * персонажей. Для каждого из трёх статусов («alive», «dead», «unknown»)
+   * отображается заголовок, краткое описание и список кнопок с именами.
+   * Нажатие на имя открывает карточку персонажа, минуя промежуточный
+   * экран. Если персонажей в категории нет, отображается сообщение.
+   */
+  const statusSections = [
+    {
+      key: "alive",
+      title: STATUS_LABELS.alive,
+      desc: "Персонажи, чья история ещё продолжается",
+    },
+    {
+      key: "dead",
+      title: STATUS_LABELS.dead,
+      desc: "Павшие герои, чья история уже завершилась",
+    },
+    {
+      key: "unknown",
+      title: STATUS_LABELS.unknown,
+      desc: "Те, чья судьба пока остаётся тайной",
+    },
+  ];
+
+  const sectionsMarkup = statusSections
+    .map(({ key, title, desc }) => {
+      const heroes = getHeroesByStatus(key);
+      const listHtml = heroes.length
+        ? heroes
+            .map(
+              (hero) => `
+            <button class="hero-list-button" type="button" data-hero-name="${escapeHtml(
+              hero.name
+            )}" data-status="${key}">
+              ${escapeHtml(hero.name)}
+            </button>
+          `
+            )
+            .join("")
+        : '<div class="empty-state">В этой категории пока нет персонажей.</div>';
+      return `
+        <div class="heroes-group">
+          <h2 class="group-title">${escapeHtml(title)}</h2>
+          <p class="group-desc">${escapeHtml(desc)}</p>
+          <div class="hero-list">${listHtml}</div>
+        </div>
+      `;
+    })
+    .join("");
+
+  appView.innerHTML = `
+    <section class="screen">
+      <h1 class="screen-title">Герои</h1>
+      <div class="heroes-groups-container">${sectionsMarkup}</div>
+    </section>
+  `;
+
+  // Назначаем обработчики на кнопки героев
+  document.querySelectorAll("[data-hero-name]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const status = button.dataset.status;
+      const name = button.dataset.heroName;
+      const heroesList = getHeroesByStatus(status);
+      const hero = heroesList.find((item) => item.name === name);
+      if (hero) {
+        pushView("hero-card", { selectedHero: hero });
       }
     });
   });
 }
 
-searchInput.oninput = () => renderGlossaryList();
+function renderHeroesList() {
+  const status = appState.selectedStatus || "alive";
+  const heroes = getHeroesByStatus(status);
 
-function openTerm(t) {
-  // Заполняем панель подробностей для термина
-  detailHeader.textContent = t.term;
-  detailBody.innerHTML = `<p>${t.desc}</p>`;
-  detailPanel.classList.remove("hidden");
-  adjustDetailPanelForViewport();
+  appView.innerHTML = `
+    <section class="screen hero-list-screen">
+      <h1 class="screen-title">${STATUS_LABELS[status]}</h1>
+      <p class="screen-subtitle">Выбери персонажа, чтобы открыть его карточку.</p>
+      <div class="hero-list">
+        ${
+          heroes.length
+            ? heroes.map((hero) => `
+                <button class="hero-list-button" type="button" data-hero-name="${escapeHtml(hero.name)}">
+                  ${escapeHtml(hero.name)}
+                </button>
+              `).join("")
+            : '<div class="empty-state">В этой категории пока нет персонажей.</div>'
+        }
+      </div>
+    </section>
+  `;
+
+  document.querySelectorAll("[data-hero-name]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const hero = heroes.find((item) => item.name === button.dataset.heroName);
+      if (!hero) return;
+      pushView("hero-card", { selectedHero: hero });
+    });
+  });
 }
 
-/*
- * Adjusts the position and size of the detail panel based on the
- * current viewport width. On narrow screens (≤600px), the panel
- * expands to cover the entire viewport so that content is not
- * rendered off-screen. On wider screens, it aligns to the right of
- * the 360px overlay panel as before. This function should be
- * called whenever the detail panel is shown or the window is
- * resized.
- */
-function adjustDetailPanelForViewport() {
-  const mobileWidth = 600;
-  if (window.innerWidth <= mobileWidth) {
-    detailPanel.style.left = '0';
-    detailPanel.style.top = '0';
-    detailPanel.style.width = '100%';
-    detailPanel.style.height = '100vh';
-    detailPanel.style.borderLeft = 'none';
-  } else {
-    detailPanel.style.left = '360px';
-    detailPanel.style.top = '0';
-    detailPanel.style.width = 'calc(100% - 360px)';
-    detailPanel.style.height = '100vh';
-    detailPanel.style.borderLeft = '';
+function renderHeroCard() {
+  const hero = appState.selectedHero;
+  if (!hero) {
+    goBack();
+    return;
   }
+
+  const portraitUrl = getPortraitUrl(hero.portrait);
+  const titleClass = getTitleSizeClass(hero.name || "");
+  const portraitMarkup = portraitUrl
+    ? `<img class="hero-portrait" src="${portraitUrl}" alt="${escapeHtml(hero.name || "")}" onerror="this.closest('.hero-portrait-frame').innerHTML='<div class=&quot;hero-portrait-fallback&quot;>Портрет недоступен</div>';">`
+    : `<div class="hero-portrait-fallback">Портрет недоступен</div>`;
+
+  appView.innerHTML = `
+    <section class="screen hero-card-screen">
+      <article class="hero-card">
+        <div class="hero-card-inner">
+          <div class="hero-left">
+            <h1 class="hero-title ${titleClass}">${escapeHtml(hero.name || "")}</h1>
+            <div class="hero-portrait-frame">${portraitMarkup}</div>
+          </div>
+
+          <div class="hero-right">
+            <div class="hero-badges">
+              ${renderBadge("Здоровье", hero.hp)}
+              ${renderBadge("Броня", hero.brn)}
+              ${renderBadge("Уровень", hero.urv)}
+            </div>
+
+            <div class="hero-meta">
+              <div class="hero-meta-label">Раса</div>
+              <div class="hero-meta-value">${escapeHtml(hero.race || "—")}</div>
+              <div class="hero-meta-label">Класс</div>
+              <div class="hero-meta-value">${escapeHtml(hero.class || "—")}</div>
+              <div class="hero-meta-label">Архетип</div>
+              <div class="hero-meta-value">${escapeHtml(hero.archetype || "—")}</div>
+            </div>
+
+            <div class="hero-stats-grid">
+              ${renderStatLine("СИЛ", hero.stats?.["СИЛ"])}
+              ${renderStatLine("ИНТ", hero.stats?.["ИНТ"])}
+              ${renderStatLine("ЛОВ", hero.stats?.["ЛОВ"])}
+              ${renderStatLine("МУД", hero.stats?.["МУД"])}
+              ${renderStatLine("ВЫН", hero.stats?.["ВЫН"])}
+              ${renderStatLine("ХАР", hero.stats?.["ХАР"])}
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+  `;
 }
 
-// Listen for window resize events to reposition the detail panel when the
-// viewport size changes (e.g., device rotation). This ensures the
-// detail panel remains visible on mobile and correctly aligned on
-// desktop.
-window.addEventListener('resize', () => {
-  if (!detailPanel.classList.contains('hidden')) {
-    adjustDetailPanelForViewport();
-  }
-});
+function renderBadge(label, value) {
+  return `
+    <div class="hero-badge">
+      <span class="hero-badge-label">${escapeHtml(label)}</span>
+      <span class="hero-badge-value">${escapeHtml(value ?? 0)}</span>
+    </div>
+  `;
+}
 
-// --- Темы ---
-function applyTheme() {
-  const saved = localStorage.getItem("viewerTheme") || "dark";
-  if (saved === "light") {
-    document.body.classList.add("light-theme");
-    if (themeToggle) themeToggle.textContent = "☀️";
-  } else {
-    document.body.classList.remove("light-theme");
-    if (themeToggle) themeToggle.textContent = "🌙";
+function renderStatLine(label, value) {
+  return `
+    <div class="hero-stat-line">
+      <span class="hero-stat-name">${escapeHtml(label)}</span>
+      <span class="hero-stat-value">${escapeHtml(value ?? 0)}</span>
+    </div>
+  `;
+}
+
+function renderGlossary() {
+  const letters = Object.keys(glossaryData).sort((a, b) => a.localeCompare(b, "ru-RU"));
+  const selectedLetter = appState.selectedLetter && letters.includes(appState.selectedLetter)
+    ? appState.selectedLetter
+    : null;
+
+  const terms = getFilteredTerms(selectedLetter, "");
+
+  appView.innerHTML = `
+    <section class="screen">
+      <h1 class="screen-title">Словарь</h1>
+      <div class="glossary-toolbar">
+        <input id="searchInput" class="search-input" type="text" placeholder="Поиск по терминам и описаниям">
+        <div class="alpha-grid">
+          <button class="alpha-button ${selectedLetter === null ? "active" : ""}" type="button" data-letter="">Все</button>
+          ${letters.map((letter) => `
+            <button class="alpha-button ${selectedLetter === letter ? "active" : ""}" type="button" data-letter="${letter}">
+              ${letter}
+            </button>
+          `).join("")}
+        </div>
+      </div>
+      <div id="glossaryTerms" class="terms-list">${renderTermButtons(terms)}</div>
+    </section>
+  `;
+
+  const searchInput = document.getElementById("searchInput");
+  const glossaryTerms = document.getElementById("glossaryTerms");
+
+  document.querySelectorAll("[data-letter]").forEach((button) => {
+    button.addEventListener("click", () => {
+      appState.selectedLetter = button.dataset.letter || null;
+      renderGlossary();
+    });
+  });
+
+  searchInput.addEventListener("input", () => {
+    const list = getFilteredTerms(appState.selectedLetter, searchInput.value.trim());
+    glossaryTerms.innerHTML = renderTermButtons(list);
+    bindTermButtons();
+  });
+
+  bindTermButtons();
+}
+
+function bindTermButtons() {
+  document.querySelectorAll("[data-term-index]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const term = findTermByIndex(button.dataset.termIndex);
+      if (!term) return;
+      openTermModal(term.term, term.desc);
+    });
+  });
+}
+
+function renderTermButtons(terms) {
+  if (!terms.length) {
+    return '<div class="empty-state">По этому запросу ничего не найдено.</div>';
   }
+
+  return terms.map((item) => `
+    <button class="term-button" type="button" data-term-index="${item.index}">
+      ${escapeHtml(item.term)}
+    </button>
+  `).join("");
+}
+
+function getFilteredTerms(letterFilter, query) {
+  const normalizedQuery = query.toLowerCase();
+  const entries = [];
+
+  Object.keys(glossaryData)
+    .sort((a, b) => a.localeCompare(b, "ru-RU"))
+    .forEach((letter) => {
+      if (letterFilter && letter !== letterFilter) return;
+      let localCounter = 0;
+      (glossaryData[letter] || []).forEach((item) => {
+        const term = item.term || "";
+        const desc = item.desc || "";
+        const matches =
+          !normalizedQuery ||
+          term.toLowerCase().includes(normalizedQuery) ||
+          desc.toLowerCase().includes(normalizedQuery);
+        if (matches) {
+          entries.push({
+            ...item,
+            index: `${letter}::${localCounter}`
+          });
+        }
+        localCounter += 1;
+      });
+    });
+  return entries;
+}
+
+function findTermByIndex(index) {
+  /*
+   * Идентификатор термина состоит из буквы и локального индекса через
+   * двойное двоеточие: «Б::0». Ранее поиск производился по глобальному
+   * счётчику, что ломало работу фильтра по букве. Теперь парсим букву
+   * и локальный индекс и обращаемся напрямую к массиву glossaryData[letter].
+   */
+  const serial = String(index);
+  const parts = serial.split("::");
+  if (parts.length !== 2) return null;
+  const [letter, idxStr] = parts;
+  const localIndex = parseInt(idxStr, 10);
+  if (!glossaryData || !glossaryData[letter] || isNaN(localIndex)) return null;
+  const list = glossaryData[letter] || [];
+  return list[localIndex] || null;
+}
+
+function openTermModal(title, desc) {
+  termModalTitle.textContent = title || "";
+  termModalBody.textContent = desc || "";
+  termModal.classList.remove("hidden");
+  termModal.setAttribute("aria-hidden", "false");
+}
+
+function closeTermModal() {
+  termModal.classList.add("hidden");
+  termModal.setAttribute("aria-hidden", "true");
+}
+
+function getHeroesByStatus(status) {
+  return heroesData
+    .filter((hero) => (hero.status || "alive") === status)
+    .slice()
+    .sort((a, b) => (a.name || "").localeCompare(b.name || "", "ru-RU"));
+}
+
+function getPortraitUrl(path) {
+  if (!path) return "";
+  if (/^(https?:|data:)/.test(path)) return path;
+  return `${ASSETS_BASE_URL}${path}`;
+}
+
+function getTitleSizeClass(name) {
+  const length = String(name || "").length;
+  /*
+   * Корректируем пороги для выбора размера заголовка. Длинные имена
+   * становятся меньше при длине 15 символов, а средние — от 10. Это
+   * помогает вместить имя в одну строку без переноса.
+   */
+  if (length >= 15) return "title-long";
+  if (length >= 10) return "title-medium";
+  return "title-short";
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
