@@ -1,536 +1,831 @@
-const appView = document.getElementById("appView");
-const backButton = document.getElementById("backButton");
-const themeToggle = document.getElementById("themeToggle");
-
-const termModal = document.getElementById("termModal");
-const termModalBackdrop = document.getElementById("termModalBackdrop");
-const termModalTitle = document.getElementById("termModalTitle");
-const termModalBody = document.getElementById("termModalBody");
-const termModalClose = document.getElementById("termModalClose");
-const fontUp = document.getElementById("fontUp");
-const fontDown = document.getElementById("fontDown");
-
-const STATUS_LABELS = {
-  alive: "Живы",
-  dead: "Мёртвы",
-  unknown: "Неизвестно"
-};
-
-const appState = {
-  view: "home",
-  selectedStatus: null,
-  selectedHero: null,
-  selectedLetter: null,
-  glossaryScale: 1,
-  history: []
-};
-
-let heroesData = [];
-let glossaryData = {};
-let settingsData = {};
-
-const isProd = window.location.hostname.includes("ext-twitch.tv");
-const DATA_BASE_URL = isProd
-  ? "https://kao820.github.io/twitch-overlay/data/"
-  : "data/";
-const ASSETS_BASE_URL = isProd
-  ? "https://kao820.github.io/twitch-overlay/"
-  : "";
-
-init();
-
-async function init() {
-  applyTheme();
-  bindStaticEvents();
-  await loadData();
-  render();
+@font-face {
+  font-family: "LRSFallback";
+  src: local("Georgia");
 }
 
-function bindStaticEvents() {
-  backButton.addEventListener("click", goBack);
-
-  themeToggle.addEventListener("click", () => {
-    const isLight = document.body.classList.contains("light-theme");
-    const next = isLight ? "dark" : "light";
-    localStorage.setItem("viewerTheme", next);
-    applyTheme();
-  });
-
-  termModalBackdrop.addEventListener("click", closeTermModal);
-  termModalClose.addEventListener("click", closeTermModal);
-
-  fontUp.addEventListener("click", () => {
-    appState.glossaryScale = Math.min(2.2, +(appState.glossaryScale + 0.1).toFixed(1));
-    document.documentElement.style.setProperty("--term-font-scale", appState.glossaryScale);
-  });
-
-  fontDown.addEventListener("click", () => {
-    appState.glossaryScale = Math.max(0.7, +(appState.glossaryScale - 0.1).toFixed(1));
-    document.documentElement.style.setProperty("--term-font-scale", appState.glossaryScale);
-  });
-
-  window.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !termModal.classList.contains("hidden")) {
-      closeTermModal();
-    }
-  });
+:root {
+  --bg-color: #0e090a;
+  --bg-color-2: #1a0e10;
+  --panel-color: #1b1114;
+  --panel-color-2: #241518;
+  --card-color: #130b0c;
+  --line-color: #7b392f;
+  --line-soft: rgba(185, 102, 76, 0.28);
+  --gold: #e0bf97;
+  --gold-soft: #c99d74;
+  --text: #f0e2d2;
+  --muted: #b49075;
+  --accent: #b14932;
+  --accent-soft: #7a2f21;
+  --shadow: rgba(0, 0, 0, 0.42);
+  --screen-padding: 20px;
+  --title-font: "LRSFallback", Georgia, "Times New Roman", serif;
+  --body-font: "LRSFallback", Georgia, "Times New Roman", serif;
+  --term-font-scale: 1;
 }
 
-async function loadData() {
-  const [heroes, glossary, settings] = await Promise.all([
-    loadJSON("heroes.json", []),
-    loadJSON("glossary.json", {}),
-    loadJSON("settings.json", {})
-  ]);
-
-  heroesData = Array.isArray(heroes) ? heroes : [];
-  glossaryData = glossary || {};
-  settingsData = settings || {};
-
-  applySettings();
+body.light-theme {
+  --bg-color: #efe5dd;
+  --bg-color-2: #f8f2ed;
+  --panel-color: #f6eee8;
+  --panel-color-2: #fff8f3;
+  --card-color: #fff6ef;
+  --line-color: #9d5d48;
+  --line-soft: rgba(157, 93, 72, 0.24);
+  --gold: #8f623f;
+  --gold-soft: #ab7a52;
+  --text: #32211d;
+  --muted: #6d4d40;
+  --accent: #a3472f;
+  --accent-soft: #7b311e;
+  --shadow: rgba(0, 0, 0, 0.12);
 }
 
-async function loadJSON(path, fallback) {
-  try {
-    const response = await fetch(`${DATA_BASE_URL}${path}`, { cache: "no-store" });
-    if (!response.ok) return fallback;
-    return await response.json();
-  } catch (error) {
-    return fallback;
-  }
+* {
+  box-sizing: border-box;
 }
 
-function applySettings() {
-  const root = document.documentElement.style;
-  if (settingsData?.textColor) root.setProperty("--text", settingsData.textColor);
-  if (settingsData?.panelBg) root.setProperty("--panel-color", settingsData.panelBg);
+html, body {
+  width: 100%;
+  height: 100%;
 }
 
-function applyTheme() {
-  const saved = localStorage.getItem("viewerTheme") || "dark";
-  document.body.classList.toggle("light-theme", saved === "light");
-  themeToggle.textContent = saved === "light" ? "☀️" : "🌙";
-  document.documentElement.style.setProperty("--term-font-scale", appState.glossaryScale);
+body {
+  margin: 0;
+  font-family: var(--body-font);
+  color: var(--text);
+  background:
+    radial-gradient(circle at top, rgba(150, 44, 28, 0.2), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(120, 32, 26, 0.14), transparent 30%),
+    linear-gradient(180deg, var(--bg-color-2), var(--bg-color));
+  overflow: hidden;
 }
 
-function pushView(nextView, payload = {}) {
-  appState.history.push({
-    view: appState.view,
-    selectedStatus: appState.selectedStatus,
-    selectedHero: appState.selectedHero,
-    selectedLetter: appState.selectedLetter
-  });
-
-  appState.view = nextView;
-  appState.selectedStatus = payload.selectedStatus ?? appState.selectedStatus ?? null;
-  appState.selectedHero = payload.selectedHero ?? null;
-  appState.selectedLetter = payload.selectedLetter ?? null;
-
-  render();
+button,
+input {
+  font: inherit;
 }
 
-function goBack() {
-  if (!appState.history.length) return;
-
-  closeTermModal();
-
-  const prev = appState.history.pop();
-  appState.view = prev.view;
-  appState.selectedStatus = prev.selectedStatus;
-  appState.selectedHero = prev.selectedHero;
-  appState.selectedLetter = prev.selectedLetter;
-  render();
+.hidden {
+  display: none !important;
 }
 
-function render() {
-  backButton.classList.toggle("hidden", appState.view === "home");
-
-  if (appState.view === "home") {
-    renderHome();
-    return;
-  }
-
-  if (appState.view === "heroes-status") {
-    renderHeroesStatus();
-    return;
-  }
-
-  if (appState.view === "heroes-list") {
-    renderHeroesList();
-    return;
-  }
-
-  if (appState.view === "hero-card") {
-    renderHeroCard();
-    return;
-  }
-
-  if (appState.view === "glossary") {
-    renderGlossary();
-    return;
-  }
+.app-shell {
+  width: 100%;
+  height: 100%;
+  position: relative;
 }
 
-function renderHome() {
+.app-header {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 56px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  pointer-events: none;
+}
+
+.header-spacer {
+  flex: 1;
+}
+
+.icon-button {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid var(--line-soft);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.03), transparent),
+    rgba(20, 12, 12, 0.78);
+  color: var(--gold);
+  cursor: pointer;
+  font-size: 1.15rem;
+  pointer-events: auto;
+  box-shadow: 0 10px 24px var(--shadow);
+}
+
+body.light-theme .icon-button {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.65), transparent),
+    rgba(255, 246, 239, 0.94);
+}
+
+.icon-button:hover,
+.tool-button:hover,
+.menu-button:hover,
+.menu-card:hover,
+.status-card:hover,
+.hero-list-button:hover,
+.alpha-button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.app-view {
+  width: 100%;
+  height: 100%;
+  padding-top: 56px;
+}
+
+.screen {
+  width: 100%;
+  height: 100%;
+  padding: var(--screen-padding);
+  overflow-y: auto;
+}
+
+.home-screen {
+  display: grid;
+  place-items: center;
+}
+
+.home-card {
+  width: min(520px, 100%);
+  padding: 28px;
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.03), transparent 28%),
+    linear-gradient(145deg, rgba(122,47,33,0.18), transparent 44%),
+    var(--panel-color);
+  border: 1px solid var(--line-soft);
+  box-shadow:
+    0 30px 60px var(--shadow),
+    inset 0 0 0 1px rgba(255,255,255,0.02);
+}
+
+.home-card::before {
+  content: "";
+  display: block;
+  height: 1px;
+  margin-bottom: 20px;
+  background: linear-gradient(90deg, transparent, var(--line-color), transparent);
+}
+
+.home-title {
+  margin: 0 0 16px;
+  text-align: center;
+  color: var(--gold);
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-family: var(--title-font);
+}
+
+/* Каждая строка в заголовке домашнего экрана отображается как отдельный блок,
+   чтобы обеспечить ровное выравнивание и единый интервал между строками. */
+.home-title-line {
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
+/* Немного сдвигаем вторую строку заголовка, чтобы не было лишнего
+   вертикального пространства между словами. */
+.home-title-line + .home-title-line {
+  margin-top: 4px;
+}
+
+.home-subtitle {
+  margin: 0 0 22px;
+  text-align: center;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.menu-stack {
+  display: grid;
+  gap: 14px;
+}
+
+.menu-button,
+.menu-card,
+.status-card,
+.hero-list-button,
+.alpha-button,
+.search-input {
+  transition: transform 0.14s ease, filter 0.14s ease, background 0.14s ease;
+}
+
+.menu-button {
+  width: 100%;
+  padding: 18px 20px;
+  border-radius: 14px;
+  border: 1px solid var(--line-soft);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.025), transparent),
+    linear-gradient(135deg, rgba(177,73,50,0.18), transparent 50%),
+    var(--panel-color-2);
+  color: var(--text);
+  cursor: pointer;
+  text-align: center;
+  font-size: 1.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 14px 30px var(--shadow);
+}
+
+.screen-title {
+  margin: 0 0 16px;
+  color: var(--gold);
+  font-size: clamp(1.5rem, 3.6vw, 2.6rem);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: var(--title-font);
+}
+
+.screen-subtitle {
+  margin: -6px 0 18px;
+  color: var(--muted);
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.status-card {
+  min-height: 180px;
+  border-radius: 18px;
+  border: 1px solid var(--line-soft);
+  background:
+    radial-gradient(circle at top right, rgba(177,73,50,0.18), transparent 28%),
+    linear-gradient(180deg, rgba(255,255,255,0.03), transparent),
+    var(--panel-color);
+  color: var(--text);
+  cursor: pointer;
+  padding: 20px;
+  text-align: left;
+  box-shadow: 0 20px 40px var(--shadow);
+}
+
+.status-card-title {
+  display: block;
+  color: var(--gold);
+  font-size: 1.45rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+}
+
+.status-card-desc {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+/* Новый экран для объединённого списка героев.  
+ * Каждая группа (живая, мёртвая, неизвестная) имеет собственный контейнер
+ * с отступами и разделителями. Заголовок группы оформлен
+ * похожим стилем на другие заголовки, но меньшего размера.
+ */
+.heroes-groups-container {
+  /* Размещаем три группы (Живы, Мёртвы, Неизвестно) в одну строку
+     на больших экранах. На узких устройствах колонки будут
+     адаптивно переноситься. */
+  display: grid;
+  /* Сетка с адаптивным числом колонок: на широких экранах три колонки,
+     на более узких устройствах элементы переносятся автоматически. */
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  max-width: 100%;
+  margin: 0;
+}
+
+.heroes-group {
+  /* Удаляем разделительные линии и внешние отступы, так как группы
+     располагаются горизонтально. */
+  padding: 0;
+  border-top: none;
+}
+
+.heroes-group:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.group-title {
+  margin: 0 0 6px;
+  color: var(--gold);
+  font-size: clamp(1.4rem, 3vw, 2.2rem);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-family: var(--title-font);
+}
+
+.group-desc {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.hero-list-screen {
+  max-width: 920px;
+}
+
+.hero-list {
+  display: grid;
+  gap: 12px;
+}
+
+.hero-list-button {
+  width: 100%;
+  padding: 16px 18px;
+  border-radius: 14px;
+  border: 1px solid var(--line-soft);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.025), transparent),
+    var(--panel-color);
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  font-size: 1.1rem;
+  letter-spacing: 0.02em;
+  box-shadow: 0 12px 28px var(--shadow);
+}
+
+.hero-card-screen {
+  display: flex;
+  align-items: stretch;
+}
+
+.hero-card {
+  position: relative;
   /*
-   * Домашний экран отображает название проекта двумя строками:
-   * «Земли былых легенд» на первой и «Молчание богов» на второй. Ниже находится
-   * подпись с предложением выбрать раздел. Мы используем две вложенные
-   * <span> для разделения строк и сохраняем стилизацию из CSS.
+   * Карточка героя теперь занимает всю доступную ширину области просмотра,
+   * чтобы соответствовать макету, представленному на скриншоте. Ограничение
+   * по максимальной ширине убрано, что позволяет карточке растягиваться на
+   * всю ширину контейнера. Минимальная высота оставлена, чтобы карточка
+   * сохраняла достойный размер на экранах с малой высотой.
    */
-  appView.innerHTML = `
-    <section class="screen home-screen">
-      <div class="home-card">
-        <h1 class="home-title">
-          <span class="home-title-line">Молчание богов</span>
-        </h1>
-        <p class="home-subtitle">Выбери раздел, чтобы открыть справку по героям или словарь терминов.</p>
-        <div class="menu-stack">
-          <button class="menu-button" id="openHeroes" type="button">Герои</button>
-          <button class="menu-button" id="openGlossary" type="button">Словарь</button>
-        </div>
-      </div>
-    </section>
-  `;
-
-  document.getElementById("openHeroes").addEventListener("click", () => {
-    pushView("heroes-status", { selectedStatus: null, selectedHero: null });
-  });
-
-  document.getElementById("openGlossary").addEventListener("click", () => {
-    pushView("glossary", { selectedLetter: null, selectedHero: null, selectedStatus: null });
-  });
+  width: 100%;
+  min-height: calc(100vh - 96px);
+  padding: 24px;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at top left, rgba(177,73,50,0.18), transparent 24%),
+    radial-gradient(circle at bottom right, rgba(177,73,50,0.12), transparent 26%),
+    linear-gradient(180deg, rgba(255,255,255,0.03), transparent 22%),
+    #12090b;
+  border: 1px solid var(--line-color);
+  box-shadow:
+    0 30px 60px var(--shadow),
+    inset 0 0 0 1px rgba(255,255,255,0.02);
+  /* В мобильной версии содержимое карточки может выходить за пределы
+     области просмотра. Разрешаем вертикальную прокрутку, убирая
+     ограничение overflow: hidden и добавляя overflow-y: auto. */
+  overflow-y: auto;
 }
 
-function renderHeroesStatus() {
-  /*
-   * Экран со списком героев объединяет выбор статуса и отображение самих
-   * персонажей. Для каждого из трёх статусов («alive», «dead», «unknown»)
-   * отображается заголовок, краткое описание и список кнопок с именами.
-   * Нажатие на имя открывает карточку персонажа, минуя промежуточный
-   * экран. Если персонажей в категории нет, отображается сообщение.
-   */
-  const statusSections = [
-    {
-      key: "alive",
-      title: STATUS_LABELS.alive,
-      desc: "Персонажи, чья история ещё продолжается",
-    },
-    {
-      key: "dead",
-      title: STATUS_LABELS.dead,
-      desc: "Павшие герои, чья история уже завершилась",
-    },
-    {
-      key: "unknown",
-      title: STATUS_LABELS.unknown,
-      desc: "Те, чья судьба пока остаётся тайной",
-    },
-  ];
-
-  const sectionsMarkup = statusSections
-    .map(({ key, title, desc }) => {
-      const heroes = getHeroesByStatus(key);
-      const listHtml = heroes.length
-        ? heroes
-            .map(
-              (hero) => `
-            <button class="hero-list-button" type="button" data-hero-name="${escapeHtml(
-              hero.name
-            )}" data-status="${key}">
-              ${escapeHtml(hero.name)}
-            </button>
-          `
-            )
-            .join("")
-        : '<div class="empty-state">В этой категории пока нет персонажей.</div>';
-      return `
-        <div class="heroes-group">
-          <h2 class="group-title">${escapeHtml(title)}</h2>
-          <p class="group-desc">${escapeHtml(desc)}</p>
-          <div class="hero-list">${listHtml}</div>
-        </div>
-      `;
-    })
-    .join("");
-
-  appView.innerHTML = `
-    <section class="screen">
-      <h1 class="screen-title">Герои</h1>
-      <div class="heroes-groups-container">${sectionsMarkup}</div>
-    </section>
-  `;
-
-  // Назначаем обработчики на кнопки героев
-  document.querySelectorAll("[data-hero-name]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const status = button.dataset.status;
-      const name = button.dataset.heroName;
-      const heroesList = getHeroesByStatus(status);
-      const hero = heroesList.find((item) => item.name === name);
-      if (hero) {
-        pushView("hero-card", { selectedHero: hero });
-      }
-    });
-  });
+.hero-card::before,
+.hero-card::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  border: 1px solid rgba(224, 191, 151, 0.18);
+  border-radius: 18px;
 }
 
-function renderHeroesList() {
-  const status = appState.selectedStatus || "alive";
-  const heroes = getHeroesByStatus(status);
-
-  appView.innerHTML = `
-    <section class="screen hero-list-screen">
-      <h1 class="screen-title">${STATUS_LABELS[status]}</h1>
-      <p class="screen-subtitle">Выбери персонажа, чтобы открыть его карточку.</p>
-      <div class="hero-list">
-        ${
-          heroes.length
-            ? heroes.map((hero) => `
-                <button class="hero-list-button" type="button" data-hero-name="${escapeHtml(hero.name)}">
-                  ${escapeHtml(hero.name)}
-                </button>
-              `).join("")
-            : '<div class="empty-state">В этой категории пока нет персонажей.</div>'
-        }
-      </div>
-    </section>
-  `;
-
-  document.querySelectorAll("[data-hero-name]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const hero = heroes.find((item) => item.name === button.dataset.heroName);
-      if (!hero) return;
-      pushView("hero-card", { selectedHero: hero });
-    });
-  });
+.hero-card::before {
+  inset: 10px;
 }
 
-function renderHeroCard() {
-  const hero = appState.selectedHero;
-  if (!hero) {
-    goBack();
-    return;
+.hero-card::after {
+  inset: 18px;
+}
+
+.hero-card-inner {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  /* Увеличиваем минимальную ширину левой колонки и максимальную ширину
+     до 450px, чтобы длинные имена помещались на одной строке. */
+  grid-template-columns: minmax(300px, 450px) minmax(0, 1fr);
+  gap: 28px;
+  height: 100%;
+}
+
+.hero-left {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 18px;
+  min-width: 0;
+}
+
+.hero-title {
+  margin: 0;
+  width: 100%;
+  /* Имя героя не переносится и отображается полностью в одну строку.
+     При недостатке места размер шрифта будет уменьшен через классы
+     title-short/title-medium/title-long. */
+  white-space: nowrap;
+  overflow-wrap: normal;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.05;
+  font-family: var(--title-font);
+}
+
+.hero-title.title-short {
+  font-size: clamp(2rem, 4vw, 3.6rem);
+}
+
+.hero-title.title-medium {
+  font-size: clamp(1.8rem, 3.2vw, 3rem);
+}
+
+.hero-title.title-long {
+  font-size: clamp(1.45rem, 2.6vw, 2.35rem);
+}
+
+.hero-portrait-frame {
+  position: relative;
+  align-self: start;
+  width: 100%;
+  max-width: 350px;
+  aspect-ratio: 0.73 / 1;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid var(--line-color);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.02), transparent),
+    #1b0d0f;
+  box-shadow: inset 0 0 0 1px rgba(224, 191, 151, 0.12);
+}
+
+.hero-portrait-frame::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border: 1px solid rgba(224, 191, 151, 0.24);
+  border-radius: 8px;
+  z-index: 1;
+}
+
+.hero-portrait {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  position: relative;
+  z-index: 0;
+  filter: contrast(1.04) saturate(0.98);
+}
+
+.hero-portrait-fallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.95rem;
+}
+
+.hero-right {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 20px;
+  min-width: 0;
+  padding-top: 8px;
+}
+
+.hero-badges {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.hero-badge {
+  min-width: 108px;
+  padding: 10px 14px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--line-color);
+  background:
+    linear-gradient(180deg, rgba(177,73,50,0.18), rgba(255,255,255,0.015)),
+    rgba(20, 10, 10, 0.56);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+  text-align: center;
+}
+
+.hero-badge-label {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+}
+
+.hero-badge-value {
+  color: var(--gold);
+  font-size: clamp(1.35rem, 2vw, 2rem);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.hero-meta {
+  position: relative;
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 10px 18px;
+  padding-bottom: 18px;
+}
+
+.hero-meta::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--line-color), transparent);
+}
+
+.hero-meta-label {
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  align-self: end;
+}
+
+.hero-meta-value {
+  color: var(--text);
+  font-size: clamp(1.1rem, 2vw, 1.7rem);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+
+.hero-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(200px, 1fr));
+  gap: 10px 30px;
+  align-content: start;
+  padding-top: 8px;
+}
+
+.hero-stat-line {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px 0 12px;
+  border-bottom: 1px solid rgba(224, 191, 151, 0.12);
+}
+
+.hero-stat-name {
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 1.05rem;
+}
+
+.hero-stat-value {
+  color: var(--gold);
+  font-size: clamp(1.5rem, 2.2vw, 2.2rem);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.glossary-toolbar {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--line-soft);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.03), transparent),
+    var(--panel-color);
+  color: var(--text);
+  outline: none;
+  box-shadow: 0 12px 28px var(--shadow);
+}
+
+.search-input::placeholder {
+  color: var(--muted);
+}
+
+.alpha-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.alpha-button {
+  min-width: 40px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--line-soft);
+  background: var(--panel-color);
+  color: var(--text);
+  cursor: pointer;
+  box-shadow: 0 8px 20px var(--shadow);
+}
+
+.alpha-button.active {
+  background: linear-gradient(180deg, var(--accent), var(--accent-soft));
+  color: #fff6f1;
+}
+
+.terms-list {
+  display: grid;
+  gap: 10px;
+}
+
+.term-button {
+  width: 100%;
+  padding: 14px 16px;
+  text-align: left;
+  border-radius: 14px;
+  border: 1px solid var(--line-soft);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.025), transparent),
+    var(--panel-color);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 1rem;
+  box-shadow: 0 10px 22px var(--shadow);
+}
+
+.empty-state {
+  color: var(--muted);
+  padding: 8px 2px;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 2, 3, 0.72);
+  backdrop-filter: blur(2px);
+}
+
+.modal-card {
+  position: absolute;
+  inset: 68px 20px 20px;
+  border-radius: 20px;
+  border: 1px solid var(--line-color);
+  background:
+    radial-gradient(circle at top left, rgba(177,73,50,0.16), transparent 24%),
+    linear-gradient(180deg, rgba(255,255,255,0.03), transparent 22%),
+    var(--panel-color);
+  box-shadow: 0 30px 60px var(--shadow);
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.modal-title-wrap {
+  min-width: 0;
+  flex: 1;
+}
+
+.modal-title {
+  margin: 0;
+  color: var(--gold);
+  font-size: clamp(1.2rem, 2vw, 2rem);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.font-tools-label {
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin-right: 4px;
+}
+
+.tool-button {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid var(--line-soft);
+  background: rgba(0, 0, 0, 0.14);
+  color: var(--gold);
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  color: var(--text);
+  line-height: 1.8;
+  font-size: calc(1rem * var(--term-font-scale));
+  white-space: pre-wrap;
+}
+
+.privacy-link {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 6px;
+  text-align: center;
+  z-index: 20;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.privacy-link a {
+  pointer-events: auto;
+  color: var(--gold-soft);
+  text-decoration: none;
+}
+
+.privacy-link a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .status-grid {
+    grid-template-columns: 1fr;
   }
 
-  const portraitUrl = getPortraitUrl(hero.portrait);
-  const titleClass = getTitleSizeClass(hero.name || "");
-  const portraitMarkup = portraitUrl
-    ? `<img class="hero-portrait" src="${portraitUrl}" alt="${escapeHtml(hero.name || "")}" onerror="this.closest('.hero-portrait-frame').innerHTML='<div class=&quot;hero-portrait-fallback&quot;>Портрет недоступен</div>';">`
-    : `<div class="hero-portrait-fallback">Портрет недоступен</div>`;
-
-  appView.innerHTML = `
-    <section class="screen hero-card-screen">
-      <article class="hero-card">
-        <div class="hero-card-inner">
-          <div class="hero-left">
-            <h1 class="hero-title ${titleClass}">${escapeHtml(hero.name || "")}</h1>
-            <div class="hero-portrait-frame">${portraitMarkup}</div>
-          </div>
-
-          <div class="hero-right">
-            <div class="hero-badges">
-              ${renderBadge("Здоровье", hero.hp)}
-              ${renderBadge("Броня", hero.brn)}
-              ${renderBadge("Уровень", hero.urv)}
-            </div>
-
-            <div class="hero-meta">
-              <div class="hero-meta-label">Раса</div>
-              <div class="hero-meta-value">${escapeHtml(hero.race || "—")}</div>
-              <div class="hero-meta-label">Класс</div>
-              <div class="hero-meta-value">${escapeHtml(hero.class || "—")}</div>
-              <div class="hero-meta-label">Архетип</div>
-              <div class="hero-meta-value">${escapeHtml(hero.archetype || "—")}</div>
-            </div>
-
-            <div class="hero-stats-grid">
-              ${renderStatLine("СИЛ", hero.stats?.["СИЛ"])}
-              ${renderStatLine("ИНТ", hero.stats?.["ИНТ"])}
-              ${renderStatLine("ЛОВ", hero.stats?.["ЛОВ"])}
-              ${renderStatLine("МУД", hero.stats?.["МУД"])}
-              ${renderStatLine("ВЫН", hero.stats?.["ВЫН"])}
-              ${renderStatLine("ХАР", hero.stats?.["ХАР"])}
-            </div>
-          </div>
-        </div>
-      </article>
-    </section>
-  `;
-}
-
-function renderBadge(label, value) {
-  return `
-    <div class="hero-badge">
-      <span class="hero-badge-label">${escapeHtml(label)}</span>
-      <span class="hero-badge-value">${escapeHtml(value ?? 0)}</span>
-    </div>
-  `;
-}
-
-function renderStatLine(label, value) {
-  return `
-    <div class="hero-stat-line">
-      <span class="hero-stat-name">${escapeHtml(label)}</span>
-      <span class="hero-stat-value">${escapeHtml(value ?? 0)}</span>
-    </div>
-  `;
-}
-
-function renderGlossary() {
-  const letters = Object.keys(glossaryData).sort((a, b) => a.localeCompare(b, "ru-RU"));
-  const selectedLetter = appState.selectedLetter && letters.includes(appState.selectedLetter)
-    ? appState.selectedLetter
-    : null;
-
-  const terms = getFilteredTerms(selectedLetter, "");
-
-  appView.innerHTML = `
-    <section class="screen">
-      <h1 class="screen-title">Словарь</h1>
-      <div class="glossary-toolbar">
-        <input id="searchInput" class="search-input" type="text" placeholder="Поиск по терминам и описаниям">
-        <div class="alpha-grid">
-          <button class="alpha-button ${selectedLetter === null ? "active" : ""}" type="button" data-letter="">Все</button>
-          ${letters.map((letter) => `
-            <button class="alpha-button ${selectedLetter === letter ? "active" : ""}" type="button" data-letter="${letter}">
-              ${letter}
-            </button>
-          `).join("")}
-        </div>
-      </div>
-      <div id="glossaryTerms" class="terms-list">${renderTermButtons(terms)}</div>
-    </section>
-  `;
-
-  const searchInput = document.getElementById("searchInput");
-  const glossaryTerms = document.getElementById("glossaryTerms");
-
-  document.querySelectorAll("[data-letter]").forEach((button) => {
-    button.addEventListener("click", () => {
-      appState.selectedLetter = button.dataset.letter || null;
-      renderGlossary();
-    });
-  });
-
-  searchInput.addEventListener("input", () => {
-    const list = getFilteredTerms(appState.selectedLetter, searchInput.value.trim());
-    glossaryTerms.innerHTML = renderTermButtons(list);
-    bindTermButtons();
-  });
-
-  bindTermButtons();
-}
-
-function bindTermButtons() {
-  document.querySelectorAll("[data-term-index]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const term = findTermByIndex(button.dataset.termIndex);
-      if (!term) return;
-      openTermModal(term.term, term.desc);
-    });
-  });
-}
-
-function renderTermButtons(terms) {
-  if (!terms.length) {
-    return '<div class="empty-state">По этому запросу ничего не найдено.</div>';
+  .hero-card-inner {
+    grid-template-columns: 1fr;
+    gap: 20px;
   }
 
-  return terms.map((item) => `
-    <button class="term-button" type="button" data-term-index="${item.index}">
-      ${escapeHtml(item.term)}
-    </button>
-  `).join("");
+  .hero-left {
+    max-width: 360px;
+  }
+
+  .hero-badges {
+    justify-content: flex-start;
+  }
 }
 
-function getFilteredTerms(letterFilter, query) {
-  const normalizedQuery = query.toLowerCase();
-  const entries = [];
+@media (max-width: 640px) {
+  :root {
+    --screen-padding: 14px;
+  }
 
-  Object.keys(glossaryData)
-    .sort((a, b) => a.localeCompare(b, "ru-RU"))
-    .forEach((letter) => {
-      if (letterFilter && letter !== letterFilter) return;
-      let localCounter = 0;
-      (glossaryData[letter] || []).forEach((item) => {
-        const term = item.term || "";
-        const desc = item.desc || "";
-        const matches =
-          !normalizedQuery ||
-          term.toLowerCase().includes(normalizedQuery) ||
-          desc.toLowerCase().includes(normalizedQuery);
-        if (matches) {
-          entries.push({
-            ...item,
-            index: `${letter}::${localCounter}`
-          });
-        }
-        localCounter += 1;
-      });
-    });
-  return entries;
-}
+  .home-card {
+    padding: 22px 16px;
+    border-radius: 18px;
+  }
 
-function findTermByIndex(index) {
-  /*
-   * Идентификатор термина состоит из буквы и локального индекса через
-   * двойное двоеточие: «Б::0». Ранее поиск производился по глобальному
-   * счётчику, что ломало работу фильтра по букве. Теперь парсим букву
-   * и локальный индекс и обращаемся напрямую к массиву glossaryData[letter].
-   */
-  const serial = String(index);
-  const parts = serial.split("::");
-  if (parts.length !== 2) return null;
-  const [letter, idxStr] = parts;
-  const localIndex = parseInt(idxStr, 10);
-  if (!glossaryData || !glossaryData[letter] || isNaN(localIndex)) return null;
-  const list = glossaryData[letter] || [];
-  return list[localIndex] || null;
-}
+  .hero-card {
+    min-height: auto;
+    padding: 16px;
+    border-radius: 18px;
+  }
 
-function openTermModal(title, desc) {
-  termModalTitle.textContent = title || "";
-  termModalBody.textContent = desc || "";
-  termModal.classList.remove("hidden");
-  termModal.setAttribute("aria-hidden", "false");
-}
+  .hero-title.title-short,
+  .hero-title.title-medium,
+  .hero-title.title-long {
+    font-size: clamp(1.2rem, 7vw, 1.8rem);
+  }
 
-function closeTermModal() {
-  termModal.classList.add("hidden");
-  termModal.setAttribute("aria-hidden", "true");
-}
+  .hero-meta {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
 
-function getHeroesByStatus(status) {
-  return heroesData
-    .filter((hero) => (hero.status || "alive") === status)
-    .slice()
-    .sort((a, b) => (a.name || "").localeCompare(b.name || "", "ru-RU"));
-}
+  .hero-meta-label {
+    margin-top: 6px;
+  }
 
-function getPortraitUrl(path) {
-  if (!path) return "";
-  if (/^(https?:|data:)/.test(path)) return path;
-  return `${ASSETS_BASE_URL}${path}`;
-}
+  .hero-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 0 16px;
+  }
 
-function getTitleSizeClass(name) {
-  const length = String(name || "").length;
-  /*
-   * Корректируем пороги для выбора размера заголовка. Длинные имена
-   * становятся меньше при длине 15 символов, а средние — от 10. Это
-   * помогает вместить имя в одну строку без переноса.
-   */
-  if (length >= 15) return "title-long";
-  if (length >= 10) return "title-medium";
-  return "title-short";
-}
+  .modal-card {
+    inset: 62px 12px 12px;
+    border-radius: 16px;
+  }
 
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+  .privacy-link {
+    display: none;
+  }
 }
