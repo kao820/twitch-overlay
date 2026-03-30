@@ -1,45 +1,564 @@
 /*
- * Переопределение стилей для LRS Overlay.
+ * LRS Overlay Stylesheet
  *
- * Чтобы сохранить оригинальный дизайн из стартового набора, разместите
- * исходный файл `styles.css` из предыдущей рабочей версии выше этого блока.
- * Данный файл содержит лишь корректировки, решающие проблемы с темой и
- * отображением характеристик на мобильных устройствах. Если вы не
- * подключаете исходный styles.css вручную, внешний вид может отличаться
- * от оригинального.
+ * This file defines the complete styling for the LRS overlay.  It
+ * implements both dark and light themes using CSS custom properties
+ * and lays out the main overlay screens, hero cards, glossary,
+ * modal windows and other UI elements.  The goal is to provide a
+ * cohesive look reminiscent of the original design while being
+ * fully responsive and compatible with Twitch’s Content Security
+ * Policy (CSP).  All colors and sizing should be derived from
+ * variables so that themes can be toggled at runtime.
  */
 
-/* Значение масштаба шрифта для модальных окон; управляется через JS */
+/*
+ * Theme variables.  Defaults represent the dark theme.  The
+ * `.light-theme` class on <body> overrides these values to provide
+ * a light interface.  You can customize these values via
+ * settings.json as well (viewer.js reads custom colors from that
+ * file and writes them into these variables).
+ */
 :root {
-  --term-font-scale: 1;
+  --background: #0e090a;
+  --panel-color: #1a1214;
+  --card-color: #231618;
+  --text: #f5f5f5;
+  --accent: #b14932;
+  --badge-bg: #2e1c1f;
+  --badge-text: #ffffff;
+  --modal-backdrop: rgba(0, 0, 0, 0.6);
+  --modal-bg: #1f1416;
+  --link-color: #d1745e;
+  --border-radius: 8px;
+  --transition-duration: 0.2s;
+  --term-font-scale: 1; /* overwritten by JS to scale glossary font */
 }
 
-/*
- * Перекрашивание карточки героя в соответствии с выбранной темой.
- * Заменяет жёстко заданный тёмный фон на переменные `--card-color`.
- */
+/* Light theme overrides */
+body.light-theme {
+  --background: #f9f4f5;
+  --panel-color: #ffffff;
+  --card-color: #fbf7f8;
+  --text: #1b1617;
+  --accent: #b14932;
+  --badge-bg: #e9e0e2;
+  --badge-text: #1b1617;
+  --modal-bg: #ffffff;
+  --modal-backdrop: rgba(0, 0, 0, 0.4);
+  --link-color: #b14932;
+}
+
+/* Base reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.5;
+  overflow-y: scroll;
+  /* smooth transitions when theme changes */
+  transition: background-color var(--transition-duration) ease,
+              color var(--transition-duration) ease;
+}
+
+/* Layout shells */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  background-color: var(--panel-color);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-spacer {
+  flex: 1;
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: color var(--transition-duration) ease;
+}
+
+.icon-button:hover {
+  color: var(--accent);
+}
+
+.icon-button.hidden {
+  display: none;
+}
+
+.app-view {
+  flex: 1;
+  padding: 1rem;
+  width: 100%;
+}
+
+/* Home screen */
+.home-card {
+  max-width: 500px;
+  margin: 2rem auto;
+  background-color: var(--card-color);
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  padding: 2rem 1.5rem;
+  text-align: center;
+}
+
+.home-title {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.home-title-line {
+  display: block;
+}
+
+.home-subtitle {
+  font-size: 0.95rem;
+  opacity: 0.8;
+  margin-bottom: 1.5rem;
+}
+
+.menu-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.menu-button {
+  background-color: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: var(--border-radius);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: opacity var(--transition-duration) ease;
+}
+
+.menu-button:hover {
+  opacity: 0.85;
+}
+
+/* Section titles */
+.screen-title {
+  font-size: 1.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.screen-subtitle {
+  font-size: 0.95rem;
+  opacity: 0.8;
+  margin-bottom: 1.25rem;
+}
+
+/* Hero status groups */
+.heroes-groups-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.heroes-group {
+  background-color: var(--card-color);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+}
+
+.group-title {
+  font-size: 1.3rem;
+  margin-bottom: 0.25rem;
+}
+
+.group-desc {
+  font-size: 0.85rem;
+  opacity: 0.75;
+  margin-bottom: 0.75rem;
+}
+
+.hero-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.hero-list-button {
+  background-color: var(--panel-color);
+  color: var(--text);
+  border: none;
+  padding: 0.45rem 0.8rem;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color var(--transition-duration) ease;
+}
+
+.hero-list-button:hover {
+  background-color: var(--accent);
+  color: #fff;
+}
+
+/* Hero list page */
+.hero-list-screen .hero-list {
+  margin-top: 1rem;
+}
+
+/* Hero card */
 .hero-card {
-  background:
-    radial-gradient(circle at top left, rgba(177, 73, 50, 0.18), transparent 24%),
-    radial-gradient(circle at bottom right, rgba(177, 73, 50, 0.12), transparent 26%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 22%),
-    var(--card-color);
+  background-color: var(--card-color);
+  border-radius: var(--border-radius);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  overflow: hidden;
 }
 
-/*
- * Рамка портрета теперь использует `--panel-color`, чтобы соответствовать теме.
- */
+.hero-card-inner {
+  display: flex;
+  gap: 1.5rem;
+}
+
+@media (max-width: 700px) {
+  .hero-card-inner {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.hero-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.hero-title {
+  font-size: 1.6rem;
+  margin-bottom: 0.8rem;
+  text-align: center;
+}
+
+.title-short {}
+.title-medium {}
+.title-long {
+  font-size: 1.4rem;
+}
+
 .hero-portrait-frame {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent),
-    var(--panel-color);
+  width: 180px;
+  height: 180px;
+  background-color: var(--panel-color);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
-/*
- * Значки характеристик героя должны оставаться на одной строке даже на мобильных.
- * При необходимости появляется горизонтальная прокрутка.
- */
+.hero-portrait {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.hero-portrait-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 0.5rem;
+}
+
 .hero-badges {
+  display: flex;
+  gap: 0.4rem;
   flex-wrap: nowrap;
   overflow-x: auto;
+  padding-bottom: 0.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.hero-badge {
+  background-color: var(--badge-bg);
+  color: var(--badge-text);
+  border-radius: var(--border-radius);
+  padding: 0.3rem 0.5rem;
+  min-width: 70px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hero-badge-label {
+  font-size: 0.65rem;
+  opacity: 0.8;
+}
+
+.hero-badge-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-top: 0.1rem;
+}
+
+.hero-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem 0.6rem;
+}
+
+.hero-meta-label {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.hero-meta-value {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.hero-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+}
+
+.hero-stat-line {
+  background-color: var(--badge-bg);
+  border-radius: var(--border-radius);
+  padding: 0.3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.hero-stat-name {
+  font-weight: 500;
+}
+
+.hero-stat-value {
+  font-weight: 600;
+}
+
+/* Glossary */
+.glossary-toolbar {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.search-input {
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--panel-color);
+  border-radius: var(--border-radius);
+  background-color: var(--panel-color);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.alpha-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.alpha-button {
+  background-color: var(--panel-color);
+  color: var(--text);
+  border: none;
+  padding: 0.3rem 0.6rem;
+  border-radius: var(--border-radius);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color var(--transition-duration) ease;
+}
+
+.alpha-button.active,
+.alpha-button:hover {
+  background-color: var(--accent);
+  color: #fff;
+}
+
+.terms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.term-button {
+  background-color: var(--panel-color);
+  color: var(--text);
+  border: none;
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--border-radius);
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color var(--transition-duration) ease;
+}
+
+.term-button:hover {
+  background-color: var(--accent);
+  color: #fff;
+}
+
+.empty-state {
+  font-size: 0.9rem;
+  opacity: 0.6;
+  padding: 1rem;
+}
+
+/* Modal styling */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--modal-backdrop);
+  backdrop-filter: blur(2px);
+}
+
+.modal-card {
+  position: relative;
+  background-color: var(--modal-bg);
+  border-radius: var(--border-radius);
+  padding: 1rem 1rem 1.5rem;
+  max-width: 500px;
+  width: 90%;
+  color: var(--text);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+  overflow-y: auto;
+  max-height: 90vh;
+  transform: translateZ(0);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.modal-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.font-tools-label {
+  margin-right: 0.25rem;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.tool-button {
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.2rem;
+  transition: color var(--transition-duration) ease;
+}
+
+.tool-button:hover {
+  color: var(--accent);
+}
+
+.close-tool {
+  font-size: 1.2rem;
+}
+
+.modal-body {
+  font-size: calc(0.9rem * var(--term-font-scale));
+  line-height: 1.4;
+}
+
+/* Footer */
+.privacy-link {
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.8rem;
+}
+
+.privacy-link a {
+  color: var(--link-color);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color var(--transition-duration) ease, border-bottom-color var(--transition-duration) ease;
+}
+
+.privacy-link a:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Utility classes */
+.hidden {
+  display: none !important;
 }
