@@ -8,10 +8,14 @@
   "author_url": "https://github.com/kao820",
   "views": {
     "overlay": {
-      "html": "index.html", "editor.html",
-      "js": "scripts.js","editor.js",
+      "html": "index.html",
+      "js": "viewer.js",
       "css": "styles.css",
-      "json": "manifest.json", "glossary.json", "heroes.json", "settings.json",
+      "json": [
+        "glossary.json",
+        "heroes.json",
+        "settings.json"
+      ],
       "width": 450,
       "height": 500
     }
