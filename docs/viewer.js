@@ -1,3 +1,8 @@
+// LRS Overlay — общая логика для показа героев и словаря.
+// Этот файл совместим с Content Security Policy Twitch: никаких inline onerror и других
+// встроенных обработчиков, только event listeners. Если старый манифест ищет scripts.js,
+// просто скопируйте этот файл под тем именем, чтобы расширение подтягивало обновления.
+
 const appView = document.getElementById("appView");
 const backButton = document.getElementById("backButton");
 const themeToggle = document.getElementById("themeToggle");
@@ -131,9 +136,7 @@ function pushView(nextView, payload = {}) {
 
 function goBack() {
   if (!appState.history.length) return;
-
   closeTermModal();
-
   const prev = appState.history.pop();
   appState.view = prev.view;
   appState.selectedStatus = prev.selectedStatus;
@@ -144,31 +147,11 @@ function goBack() {
 
 function render() {
   backButton.classList.toggle("hidden", appState.view === "home");
-
-  if (appState.view === "home") {
-    renderHome();
-    return;
-  }
-
-  if (appState.view === "heroes-status") {
-    renderHeroesStatus();
-    return;
-  }
-
-  if (appState.view === "heroes-list") {
-    renderHeroesList();
-    return;
-  }
-
-  if (appState.view === "hero-card") {
-    renderHeroCard();
-    return;
-  }
-
-  if (appState.view === "glossary") {
-    renderGlossary();
-    return;
-  }
+  if (appState.view === "home") { renderHome(); return; }
+  if (appState.view === "heroes-status") { renderHeroesStatus(); return; }
+  if (appState.view === "heroes-list") { renderHeroesList(); return; }
+  if (appState.view === "hero-card") { renderHeroCard(); return; }
+  if (appState.view === "glossary") { renderGlossary(); return; }
 }
 
 function renderHome() {
@@ -187,11 +170,9 @@ function renderHome() {
       </div>
     </section>
   `;
-
   document.getElementById("openHeroes").addEventListener("click", () => {
     pushView("heroes-status", { selectedStatus: null, selectedHero: null });
   });
-
   document.getElementById("openGlossary").addEventListener("click", () => {
     pushView("glossary", { selectedLetter: null, selectedHero: null, selectedStatus: null });
   });
@@ -199,48 +180,29 @@ function renderHome() {
 
 function renderHeroesStatus() {
   const statusSections = [
-    {
-      key: "alive",
-      title: STATUS_LABELS.alive,
-      desc: "Персонажи, чья история ещё продолжается",
-    },
-    {
-      key: "dead",
-      title: STATUS_LABELS.dead,
-      desc: "Павшие герои, чья история уже завершилась",
-    },
-    {
-      key: "unknown",
-      title: STATUS_LABELS.unknown,
-      desc: "Те, чья судьба пока остаётся тайной",
-    },
+    { key: "alive", title: STATUS_LABELS.alive, desc: "Персонажи, чья история ещё продолжается" },
+    { key: "dead",  title: STATUS_LABELS.dead,  desc: "Павшие герои, чья история уже завершилась" },
+    { key: "unknown", title: STATUS_LABELS.unknown, desc: "Те, чья судьба пока остаётся тайной" },
   ];
 
-  const sectionsMarkup = statusSections
-    .map(({ key, title, desc }) => {
-      const heroes = getHeroesByStatus(key);
-      const listHtml = heroes.length
-        ? heroes
-            .map(
-              (hero) => `
-            <button class="hero-list-button" type="button" data-hero-name="${escapeHtml(
-              hero.name
-            )}" data-status="${key}">
-              ${escapeHtml(hero.name)}
-            </button>
-          `
-            )
-            .join("")
-        : '<div class="empty-state">В этой категории пока нет персонажей.</div>';
-      return `
-        <div class="heroes-group">
-          <h2 class="group-title">${escapeHtml(title)}</h2>
-          <p class="group-desc">${escapeHtml(desc)}</p>
-          <div class="hero-list">${listHtml}</div>
-        </div>
-      `;
-    })
-    .join("");
+  const sectionsMarkup = statusSections.map(({ key, title, desc }) => {
+    const heroes = getHeroesByStatus(key);
+    const listHtml = heroes.length
+      ? heroes.map(hero => `
+          <button class="hero-list-button" type="button"
+                  data-hero-name="${escapeHtml(hero.name)}" data-status="${key}">
+            ${escapeHtml(hero.name)}
+          </button>
+        `).join("")
+      : '<div class="empty-state">В этой категории пока нет персонажей.</div>';
+    return `
+      <div class="heroes-group">
+        <h2 class="group-title">${escapeHtml(title)}</h2>
+        <p class="group-desc">${escapeHtml(desc)}</p>
+        <div class="hero-list">${listHtml}</div>
+      </div>
+    `;
+  }).join("");
 
   appView.innerHTML = `
     <section class="screen">
@@ -249,15 +211,13 @@ function renderHeroesStatus() {
     </section>
   `;
 
-  document.querySelectorAll("[data-hero-name]").forEach((button) => {
+  document.querySelectorAll("[data-hero-name]").forEach(button => {
     button.addEventListener("click", () => {
       const status = button.dataset.status;
       const name = button.dataset.heroName;
       const heroesList = getHeroesByStatus(status);
-      const hero = heroesList.find((item) => item.name === name);
-      if (hero) {
-        pushView("hero-card", { selectedHero: hero });
-      }
+      const hero = heroesList.find(item => item.name === name);
+      if (hero) pushView("hero-card", { selectedHero: hero });
     });
   });
 }
@@ -265,7 +225,6 @@ function renderHeroesStatus() {
 function renderHeroesList() {
   const status = appState.selectedStatus || "alive";
   const heroes = getHeroesByStatus(status);
-
   appView.innerHTML = `
     <section class="screen hero-list-screen">
       <h1 class="screen-title">${STATUS_LABELS[status]}</h1>
@@ -273,7 +232,7 @@ function renderHeroesList() {
       <div class="hero-list">
         ${
           heroes.length
-            ? heroes.map((hero) => `
+            ? heroes.map(hero => `
                 <button class="hero-list-button" type="button" data-hero-name="${escapeHtml(hero.name)}">
                   ${escapeHtml(hero.name)}
                 </button>
@@ -283,29 +242,23 @@ function renderHeroesList() {
       </div>
     </section>
   `;
-
-  document.querySelectorAll("[data-hero-name]").forEach((button) => {
+  document.querySelectorAll("[data-hero-name]").forEach(button => {
     button.addEventListener("click", () => {
-      const hero = heroes.find((item) => item.name === button.dataset.heroName);
-      if (!hero) return;
-      pushView("hero-card", { selectedHero: hero });
+      const hero = heroes.find(item => item.name === button.dataset.heroName);
+      if (hero) pushView("hero-card", { selectedHero: hero });
     });
   });
 }
 
 function renderHeroCard() {
   const hero = appState.selectedHero;
-  if (!hero) {
-    goBack();
-    return;
-  }
-
+  if (!hero) { goBack(); return; }
   const portraitUrl = getPortraitUrl(hero.portrait);
   const titleClass = getTitleSizeClass(hero.name || "");
+  // Содержимое портрета: без inline onerror, обработчик добавим позже.
   const portraitMarkup = portraitUrl
-    ? `<img class="hero-portrait" src="${portraitUrl}" alt="${escapeHtml(hero.name || "")}" onerror="this.closest('.hero-portrait-frame').innerHTML='<div class=&quot;hero-portrait-fallback&quot;>Портрет недоступен</div>';">`
+    ? `<img class="hero-portrait" src="${portraitUrl}" alt="${escapeHtml(hero.name || "")}">`
     : `<div class="hero-portrait-fallback">Портрет недоступен</div>`;
-
   appView.innerHTML = `
     <section class="screen hero-card-screen">
       <article class="hero-card">
@@ -314,14 +267,12 @@ function renderHeroCard() {
             <h1 class="hero-title ${titleClass}">${escapeHtml(hero.name || "")}</h1>
             <div class="hero-portrait-frame">${portraitMarkup}</div>
           </div>
-
           <div class="hero-right">
             <div class="hero-badges">
               ${renderBadge("Здоровье", hero.hp)}
               ${renderBadge("Броня", hero.brn)}
               ${renderBadge("Уровень", hero.urv)}
             </div>
-
             <div class="hero-meta">
               <div class="hero-meta-label">Раса</div>
               <div class="hero-meta-value">${escapeHtml(hero.race || "—")}</div>
@@ -330,7 +281,6 @@ function renderHeroCard() {
               <div class="hero-meta-label">Архетип</div>
               <div class="hero-meta-value">${escapeHtml(hero.archetype || "—")}</div>
             </div>
-
             <div class="hero-stats-grid">
               ${renderStatLine("СИЛ", hero.stats?.["СИЛ"])}
               ${renderStatLine("ИНТ", hero.stats?.["ИНТ"])}
@@ -344,6 +294,16 @@ function renderHeroCard() {
       </article>
     </section>
   `;
+  // Назначаем обработчик ошибки для портрета после вставки в DOM.
+  const portraitEl = appView.querySelector('.hero-card-screen .hero-portrait');
+  if (portraitEl) {
+    portraitEl.addEventListener('error', () => {
+      const frame = portraitEl.closest('.hero-portrait-frame');
+      if (frame) {
+        frame.innerHTML = '<div class="hero-portrait-fallback">Портрет недоступен</div>';
+      }
+    }, { once: true });
+  }
 }
 
 function renderBadge(label, value) {
@@ -369,9 +329,7 @@ function renderGlossary() {
   const selectedLetter = appState.selectedLetter && letters.includes(appState.selectedLetter)
     ? appState.selectedLetter
     : null;
-
   const terms = getFilteredTerms(selectedLetter, "");
-
   appView.innerHTML = `
     <section class="screen">
       <h1 class="screen-title">Словарь</h1>
@@ -379,7 +337,7 @@ function renderGlossary() {
         <input id="searchInput" class="search-input" type="text" placeholder="Поиск по терминам и описаниям">
         <div class="alpha-grid">
           <button class="alpha-button ${selectedLetter === null ? "active" : ""}" type="button" data-letter="">Все</button>
-          ${letters.map((letter) => `
+          ${letters.map(letter => `
             <button class="alpha-button ${selectedLetter === letter ? "active" : ""}" type="button" data-letter="${letter}">
               ${letter}
             </button>
@@ -389,32 +347,27 @@ function renderGlossary() {
       <div id="glossaryTerms" class="terms-list">${renderTermButtons(terms)}</div>
     </section>
   `;
-
   const searchInput = document.getElementById("searchInput");
   const glossaryTerms = document.getElementById("glossaryTerms");
-
-  document.querySelectorAll("[data-letter]").forEach((button) => {
+  document.querySelectorAll("[data-letter]").forEach(button => {
     button.addEventListener("click", () => {
       appState.selectedLetter = button.dataset.letter || null;
       renderGlossary();
     });
   });
-
   searchInput.addEventListener("input", () => {
     const list = getFilteredTerms(appState.selectedLetter, searchInput.value.trim());
     glossaryTerms.innerHTML = renderTermButtons(list);
     bindTermButtons();
   });
-
   bindTermButtons();
 }
 
 function bindTermButtons() {
-  document.querySelectorAll("[data-term-index]").forEach((button) => {
+  document.querySelectorAll("[data-term-index]").forEach(button => {
     button.addEventListener("click", () => {
       const term = findTermByIndex(button.dataset.termIndex);
-      if (!term) return;
-      openTermModal(term.term, term.desc);
+      if (term) openTermModal(term.term, term.desc);
     });
   });
 }
@@ -423,8 +376,7 @@ function renderTermButtons(terms) {
   if (!terms.length) {
     return '<div class="empty-state">По этому запросу ничего не найдено.</div>';
   }
-
-  return terms.map((item) => `
+  return terms.map(item => `
     <button class="term-button" type="button" data-term-index="${item.index}">
       ${escapeHtml(item.term)}
     </button>
@@ -434,13 +386,12 @@ function renderTermButtons(terms) {
 function getFilteredTerms(letterFilter, query) {
   const normalizedQuery = query.toLowerCase();
   const entries = [];
-
   Object.keys(glossaryData)
     .sort((a, b) => a.localeCompare(b, "ru-RU"))
-    .forEach((letter) => {
+    .forEach(letter => {
       if (letterFilter && letter !== letterFilter) return;
       let localCounter = 0;
-      (glossaryData[letter] || []).forEach((item) => {
+      (glossaryData[letter] || []).forEach(item => {
         const term = item.term || "";
         const desc = item.desc || "";
         const matches =
@@ -448,10 +399,7 @@ function getFilteredTerms(letterFilter, query) {
           term.toLowerCase().includes(normalizedQuery) ||
           desc.toLowerCase().includes(normalizedQuery);
         if (matches) {
-          entries.push({
-            ...item,
-            index: `${letter}::${localCounter}`
-          });
+          entries.push({ ...item, index: `${letter}::${localCounter}` });
         }
         localCounter += 1;
       });
@@ -460,14 +408,12 @@ function getFilteredTerms(letterFilter, query) {
 }
 
 function findTermByIndex(index) {
-  const serial = String(index);
-  const parts = serial.split("::");
+  const parts = String(index).split("::");
   if (parts.length !== 2) return null;
   const [letter, idxStr] = parts;
   const localIndex = parseInt(idxStr, 10);
   if (!glossaryData || !glossaryData[letter] || isNaN(localIndex)) return null;
-  const list = glossaryData[letter] || [];
-  return list[localIndex] || null;
+  return (glossaryData[letter] || [])[localIndex] || null;
 }
 
 function openTermModal(title, desc) {
@@ -484,15 +430,14 @@ function closeTermModal() {
 
 function getHeroesByStatus(status) {
   return heroesData
-    .filter((hero) => (hero.status || "alive") === status)
+    .filter(hero => (hero.status || "alive") === status)
     .slice()
     .sort((a, b) => (a.name || "").localeCompare(b.name || "", "ru-RU"));
 }
 
 function getPortraitUrl(path) {
   if (!path) return "";
-  if (/^(https?:|data:)/.test(path)) return path;
-  return `${ASSETS_BASE_URL}${path}`;
+  return /^(https?:|data:)/.test(path) ? path : `${ASSETS_BASE_URL}${path}`;
 }
 
 function getTitleSizeClass(name) {
