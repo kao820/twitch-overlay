@@ -2,8 +2,8 @@
  * Скрипт для административной панели LRS Overlay.
  * Здесь реализована загрузка данных о героях и терминов, переключение
  * светлой/тёмной темы, вкладки для героев и словаря, а также формы
- * редактирования/создания. Всё максимально приближено к стилистике
- * основного оверлея.
+ * редактирования/создания. Логика кнопки «Добавить термин» исправлена:
+ * при первом клике она очищает форму, при повторном — сохраняет термин.
  */
 
 // --- DOM элементы ---
@@ -67,15 +67,12 @@ let currentGlossaryIndex = null;
 
 // --- Инициализация ---
 document.addEventListener('DOMContentLoaded', async () => {
-  // Применяем тему из локального хранилища
   applyTheme();
-  // Загрузка данных
   heroes = (await loadJSON('heroes.json')) || [];
   glossary = (await loadJSON('glossary.json')) || {};
   renderHeroesList();
   renderGlossaryLetters();
   renderGlossaryList();
-  // Устанавливаем состояние кнопок словаря (только "Добавить термин" по умолчанию)
   updateGlossaryActionButtons();
   bindEvents();
 });
@@ -240,7 +237,6 @@ function bindEvents() {
     openGlossaryTerm(letter, index);
   });
 
-  // Добавить/сохранить термин
   addTermBtn.addEventListener('click', () => {
     const termFilled = glossTermInput.value && glossTermInput.value.trim();
     if (termFilled) {
@@ -253,12 +249,10 @@ function bindEvents() {
     }
   });
 
-  // Сохранить существующий термин
   saveTermBtn.addEventListener('click', () => {
     saveGlossaryTerm();
   });
 
-  // Отмена редактирования
   cancelTermBtn.addEventListener('click', () => {
     currentGlossaryIndex = null;
     glossTermInput.value = '';
@@ -271,7 +265,7 @@ function bindEvents() {
   });
 }
 
-// --- Герои: открытие формы ---
+// --- Герои: формы ---
 function openHeroForm(index) {
   currentHeroIndex = index;
   const isNew = index === null || index === undefined;
@@ -314,7 +308,6 @@ function closeHeroForm() {
   heroFormEl.setAttribute('aria-hidden', 'true');
 }
 
-// --- Герои: сохранение ---
 function saveHero() {
   const name = heroNameInput.value.trim();
   if (!name) {
@@ -346,7 +339,7 @@ function saveHero() {
   closeHeroForm();
 }
 
-// --- Glossary: открытие термина ---
+// --- Glossary: управление ---
 function openGlossaryTerm(letter, index) {
   currentGlossaryLetter = letter;
   currentGlossaryIndex = index;
@@ -360,7 +353,6 @@ function openGlossaryTerm(letter, index) {
   updateGlossaryActionButtons();
 }
 
-// --- Glossary: сохранение ---
 function saveGlossaryTerm() {
   const letter = currentGlossaryLetter || '';
   if (!letter) {
@@ -387,7 +379,6 @@ function saveGlossaryTerm() {
   updateGlossaryActionButtons();
 }
 
-// --- Glossary: обновление состояния кнопок ---
 function updateGlossaryActionButtons() {
   const hasSelection = currentGlossaryIndex !== null && currentGlossaryIndex !== undefined;
   if (addTermBtn) addTermBtn.classList.toggle('hidden', hasSelection);
