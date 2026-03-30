@@ -12,12 +12,10 @@
     <h1 class="admin-title">Админка LRS Overlay</h1>
     <button id="themeToggle" class="theme-toggle" title="Переключить тему">🌙</button>
   </header>
-
   <nav class="tabs">
     <button class="tab active" data-tab="heroes" type="button">Герои</button>
     <button class="tab" data-tab="glossary" type="button">Словарь</button>
   </nav>
-
   <!-- Контейнер содержимого вкладок -->
   <main class="tab-wrapper">
     <!-- Вкладка героев -->
@@ -65,7 +63,6 @@
         </div>
       </div>
     </section>
-
     <!-- Вкладка словаря -->
     <section id="tabGlossary" class="tab-content hidden">
       <div class="glossary-layout">
@@ -77,11 +74,6 @@
           <label>Термин<input type="text" id="glossTerm" autocomplete="off"></label>
           <label>Описание<textarea id="glossDesc" rows="6"></textarea></label>
           <div class="glossary-actions">
-            <!--
-              При отсутствии выбранного термина отображается только кнопка
-              «Добавить термин». Когда термин выбран, появляются кнопки
-              «Сохранить» и «Отмена». Кнопка скачивания всегда видна.
-            -->
             <button id="addTermBtn" type="button">Добавить термин</button>
             <button id="saveTermBtn" type="button" class="hidden">Сохранить</button>
             <button id="cancelTermBtn" type="button" class="hidden">Отмена</button>
@@ -91,7 +83,6 @@
       </div>
     </section>
   </main>
-
   <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
   <script src="editor.js"></script>
 </body>
