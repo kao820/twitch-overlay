@@ -2,11 +2,14 @@
 // со старым манифестом Twitch, который ожидает загрузку scripts.js.
 // Содержимое полностью совпадает с viewer.js. При необходимости вносите
 // изменения в оба файла одновременно.
+// LRS Overlay — основной скрипт оверлея.
+// Реализует домашний экран, список героев, карточки, словарь, переключение темы
+// и модальные окна.  Совместим с CSP Twitch: никаких inline-обработчиков.
 
-// LRS Overlay — совместимый с Twitch код (без inline-скриптов).
 const appView = document.getElementById("appView");
 const backButton = document.getElementById("backButton");
 const themeToggle = document.getElementById("themeToggle");
+
 const termModal = document.getElementById("termModal");
 const termModalBackdrop = document.getElementById("termModalBackdrop");
 const termModalTitle = document.getElementById("termModalTitle");
@@ -42,6 +45,7 @@ const ASSETS_BASE_URL = isProd
   ? "https://kao820.github.io/twitch-overlay/"
   : "";
 
+// Запускаем приложение: применяем тему, привязываем обработчики, загружаем данные
 init();
 
 async function init() {
@@ -51,56 +55,70 @@ async function init() {
   render();
 }
 
+// Назначаем обработчики событий, которые не зависят от состояния
 function bindStaticEvents() {
   backButton.addEventListener("click", goBack);
+
   themeToggle.addEventListener("click", () => {
     const next = document.body.classList.contains("light-theme") ? "dark" : "light";
     localStorage.setItem("viewerTheme", next);
     applyTheme();
   });
+
   termModalBackdrop.addEventListener("click", closeTermModal);
   termModalClose.addEventListener("click", closeTermModal);
+
   fontUp.addEventListener("click", () => {
     appState.glossaryScale = Math.min(2.2, +(appState.glossaryScale + 0.1).toFixed(1));
     document.documentElement.style.setProperty("--term-font-scale", appState.glossaryScale);
   });
+
   fontDown.addEventListener("click", () => {
     appState.glossaryScale = Math.max(0.7, +(appState.glossaryScale - 0.1).toFixed(1));
     document.documentElement.style.setProperty("--term-font-scale", appState.glossaryScale);
   });
-  window.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !termModal.classList.contains("hidden")) closeTermModal();
+
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !termModal.classList.contains("hidden")) {
+      closeTermModal();
+    }
   });
 }
 
+// Загружаем JSON‑данные о героях, словаре и пользовательских настройках
 async function loadData() {
   const [heroes, glossary, settings] = await Promise.all([
     loadJSON("heroes.json", []),
     loadJSON("glossary.json", {}),
     loadJSON("settings.json", {}),
   ]);
+
   heroesData = Array.isArray(heroes) ? heroes : [];
   glossaryData = glossary || {};
   settingsData = settings || {};
+
   applySettings();
 }
 
+// Универсальный загрузчик JSON с обработкой ошибок
 async function loadJSON(path, fallback) {
   try {
-    const response = await fetch(`${DATA_BASE_URL}${path}`, { cache: "no-store" });
-    if (!response.ok) return fallback;
-    return await response.json();
+    const res = await fetch(`${DATA_BASE_URL}${path}`, { cache: "no-store" });
+    if (!res.ok) return fallback;
+    return await res.json();
   } catch {
     return fallback;
   }
 }
 
+// Применяем пользовательские настройки (цвет текста, фон панели)
 function applySettings() {
   const root = document.documentElement.style;
   if (settingsData?.textColor) root.setProperty("--text", settingsData.textColor);
   if (settingsData?.panelBg) root.setProperty("--panel-color", settingsData.panelBg);
 }
 
+// Применяем сохранённую тему и масштаб шрифта словаря
 function applyTheme() {
   const saved = localStorage.getItem("viewerTheme") || "dark";
   document.body.classList.toggle("light-theme", saved === "light");
@@ -108,6 +126,7 @@ function applyTheme() {
   document.documentElement.style.setProperty("--term-font-scale", appState.glossaryScale);
 }
 
+// Переход на новый экран с сохранением истории
 function pushView(nextView, payload = {}) {
   appState.history.push({
     view: appState.view,
@@ -122,6 +141,7 @@ function pushView(nextView, payload = {}) {
   render();
 }
 
+// Возврат к предыдущему состоянию
 function goBack() {
   if (!appState.history.length) return;
   closeTermModal();
@@ -133,6 +153,7 @@ function goBack() {
   render();
 }
 
+// Основной рендерер: выбирает, какой экран показать
 function render() {
   backButton.classList.toggle("hidden", appState.view === "home");
   if (appState.view === "home") { renderHome(); return; }
@@ -142,6 +163,7 @@ function render() {
   if (appState.view === "glossary") { renderGlossary(); return; }
 }
 
+// Домашний экран
 function renderHome() {
   appView.innerHTML = `
     <section class="screen home-screen">
@@ -152,42 +174,60 @@ function renderHome() {
         </h1>
         <p class="home-subtitle">Выбери раздел, чтобы открыть справку по героям или словарь терминов.</p>
         <div class="menu-stack">
-          <button class="menu-button" id="openHeroes">Герои</button>
-          <button class="menu-button" id="openGlossary">Словарь</button>
+          <button class="menu-button" id="openHeroes" type="button">Герои</button>
+          <button class="menu-button" id="openGlossary" type="button">Словарь</button>
         </div>
       </div>
-    </section>`;
-  document.getElementById("openHeroes").addEventListener("click", () => pushView("heroes-status"));
-  document.getElementById("openGlossary").addEventListener("click", () => pushView("glossary"));
+    </section>
+  `;
+  document.getElementById("openHeroes").addEventListener("click", () => {
+    pushView("heroes-status", { selectedStatus: null, selectedHero: null });
+  });
+  document.getElementById("openGlossary").addEventListener("click", () => {
+    pushView("glossary", { selectedLetter: null, selectedHero: null, selectedStatus: null });
+  });
 }
 
+// Экран со статусами героев
 function renderHeroesStatus() {
   const statusSections = [
     { key: "alive", title: STATUS_LABELS.alive, desc: "Персонажи, чья история ещё продолжается" },
     { key: "dead", title: STATUS_LABELS.dead, desc: "Павшие герои, чья история уже завершилась" },
     { key: "unknown", title: STATUS_LABELS.unknown, desc: "Те, чья судьба пока остаётся тайной" },
   ];
+  const sectionsMarkup = statusSections.map(({ key, title, desc }) => {
+    const heroes = getHeroesByStatus(key);
+    const listHtml = heroes.length
+      ? heroes.map(hero => `
+        <button class="hero-list-button" type="button" data-hero-name="${escapeHtml(hero.name)}" data-status="${key}">
+          ${escapeHtml(hero.name)}
+        </button>`).join("")
+      : '<div class="empty-state">В этой категории пока нет персонажей.</div>';
+    return `
+      <div class="heroes-group">
+        <h2 class="group-title">${escapeHtml(title)}</h2>
+        <p class="group-desc">${escapeHtml(desc)}</p>
+        <div class="hero-list">${listHtml}</div>
+      </div>`;
+  }).join("");
   appView.innerHTML = `
     <section class="screen">
       <h1 class="screen-title">Герои</h1>
-      <div class="heroes-groups-container">${statusSections.map(({ key, title, desc }) => {
-        const heroes = getHeroesByStatus(key);
-        const listHtml = heroes.length
-          ? heroes.map(h => `<button class="hero-list-button" data-hero-name="${escapeHtml(h.name)}" data-status="${key}">${escapeHtml(h.name)}</button>`).join("")
-          : '<div class="empty-state">В этой категории пока нет персонажей.</div>';
-        return `<div class="heroes-group"><h2 class="group-title">${escapeHtml(title)}</h2><p class="group-desc">${escapeHtml(desc)}</p><div class="hero-list">${listHtml}</div></div>`;
-      }).join("")}</div>
-    </section>`;
-  document.querySelectorAll("[data-hero-name]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const status = btn.dataset.status;
-      const name = btn.dataset.heroName;
-      const hero = getHeroesByStatus(status).find(h => h.name === name);
+      <div class="heroes-groups-container">${sectionsMarkup}</div>
+    </section>
+  `;
+  document.querySelectorAll("[data-hero-name]").forEach(button => {
+    button.addEventListener("click", () => {
+      const status = button.dataset.status;
+      const name = button.dataset.heroName;
+      const heroesList = getHeroesByStatus(status);
+      const hero = heroesList.find(item => item.name === name);
       if (hero) pushView("hero-card", { selectedHero: hero });
     });
   });
 }
 
+// Экран списка героев (если выбран только один статус)
 function renderHeroesList() {
   const status = appState.selectedStatus || "alive";
   const heroes = getHeroesByStatus(status);
@@ -195,16 +235,23 @@ function renderHeroesList() {
     <section class="screen hero-list-screen">
       <h1 class="screen-title">${STATUS_LABELS[status]}</h1>
       <p class="screen-subtitle">Выбери персонажа, чтобы открыть его карточку.</p>
-      <div class="hero-list">${heroes.length ? heroes.map(h => `<button class="hero-list-button" data-hero-name="${escapeHtml(h.name)}">${escapeHtml(h.name)}</button>`).join("") : '<div class="empty-state">В этой категории пока нет персонажей.</div>'}</div>
-    </section>`;
-  document.querySelectorAll("[data-hero-name]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const hero = heroes.find(h => h.name === btn.dataset.heroName);
+      <div class="hero-list">
+        ${heroes.length ? heroes.map(hero => `
+          <button class="hero-list-button" type="button" data-hero-name="${escapeHtml(hero.name)}">
+            ${escapeHtml(hero.name)}
+          </button>`).join("") : '<div class="empty-state">В этой категории пока нет персонажей.</div>'}
+      </div>
+    </section>
+  `;
+  document.querySelectorAll("[data-hero-name]").forEach(button => {
+    button.addEventListener("click", () => {
+      const hero = heroes.find(item => item.name === button.dataset.heroName);
       if (hero) pushView("hero-card", { selectedHero: hero });
     });
   });
 }
 
+// Карточка героя
 function renderHeroCard() {
   const hero = appState.selectedHero;
   if (!hero) { goBack(); return; }
@@ -228,9 +275,12 @@ function renderHeroCard() {
               ${renderBadge("Уровень", hero.urv)}
             </div>
             <div class="hero-meta">
-              <div class="hero-meta-label">Раса</div><div class="hero-meta-value">${escapeHtml(hero.race || "—")}</div>
-              <div class="hero-meta-label">Класс</div><div class="hero-meta-value">${escapeHtml(hero.class || "—")}</div>
-              <div class="hero-meta-label">Архетип</div><div class="hero-meta-value">${escapeHtml(hero.archetype || "—")}</div>
+              <div class="hero-meta-label">Раса</div>
+              <div class="hero-meta-value">${escapeHtml(hero.race || "—")}</div>
+              <div class="hero-meta-label">Класс</div>
+              <div class="hero-meta-value">${escapeHtml(hero.class || "—")}</div>
+              <div class="hero-meta-label">Архетип</div>
+              <div class="hero-meta-value">${escapeHtml(hero.archetype || "—")}</div>
             </div>
             <div class="hero-stats-grid">
               ${renderStatLine("СИЛ", hero.stats?.["СИЛ"])}
@@ -243,24 +293,38 @@ function renderHeroCard() {
           </div>
         </div>
       </article>
-    </section>`;
-  const portraitEl = appView.querySelector('.hero-card-screen .hero-portrait');
+    </section>
+  `;
+  // Обработчик ошибки портрета (без inline onerror)
+  const portraitEl = appView.querySelector('.hero-portrait-frame .hero-portrait');
   if (portraitEl) {
     portraitEl.addEventListener('error', () => {
       const frame = portraitEl.closest('.hero-portrait-frame');
-      if (frame) frame.innerHTML = '<div class="hero-portrait-fallback">Портрет недоступен</div>';
+      if (frame) {
+        frame.innerHTML = '<div class="hero-portrait-fallback">Портрет недоступен</div>';
+      }
     }, { once: true });
   }
 }
 
+// Компоненты для карточек
 function renderBadge(label, value) {
-  return `<div class="hero-badge"><span class="hero-badge-label">${escapeHtml(label)}</span><span class="hero-badge-value">${escapeHtml(value ?? 0)}</span></div>`;
+  return `
+    <div class="hero-badge">
+      <span class="hero-badge-label">${escapeHtml(label)}</span>
+      <span class="hero-badge-value">${escapeHtml(value ?? 0)}</span>
+    </div>`;
 }
 
 function renderStatLine(label, value) {
-  return `<div class="hero-stat-line"><span class="hero-stat-name">${escapeHtml(label)}</span><span class="hero-stat-value">${escapeHtml(value ?? 0)}</span></div>`;
+  return `
+    <div class="hero-stat-line">
+      <span class="hero-stat-name">${escapeHtml(label)}</span>
+      <span class="hero-stat-value">${escapeHtml(value ?? 0)}</span>
+    </div>`;
 }
 
+// Экран словаря
 function renderGlossary() {
   const letters = Object.keys(glossaryData).sort((a, b) => a.localeCompare(b, "ru-RU"));
   const selectedLetter = appState.selectedLetter && letters.includes(appState.selectedLetter) ? appState.selectedLetter : null;
@@ -269,19 +333,24 @@ function renderGlossary() {
     <section class="screen">
       <h1 class="screen-title">Словарь</h1>
       <div class="glossary-toolbar">
-        <input id="searchInput" class="search-input" placeholder="Поиск по терминам и описаниям">
+        <input id="searchInput" class="search-input" type="text" placeholder="Поиск по терминам и описаниям">
         <div class="alpha-grid">
-          <button class="alpha-button ${selectedLetter === null ? "active" : ""}" data-letter="">Все</button>
-          ${letters.map(l => `<button class="alpha-button ${selectedLetter === l ? "active" : ""}" data-letter="${l}">${l}</button>`).join("")}
+          <button class="alpha-button ${selectedLetter === null ? "active" : ""}" type="button" data-letter="">Все</button>
+          ${letters.map(letter => `
+            <button class="alpha-button ${selectedLetter === letter ? "active" : ""}" type="button" data-letter="${letter}">
+              ${letter}
+            </button>
+          `).join("")}
         </div>
       </div>
       <div id="glossaryTerms" class="terms-list">${renderTermButtons(terms)}</div>
-    </section>`;
+    </section>
+  `;
   const searchInput = document.getElementById("searchInput");
   const glossaryTerms = document.getElementById("glossaryTerms");
-  document.querySelectorAll("[data-letter]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      appState.selectedLetter = btn.dataset.letter || null;
+  document.querySelectorAll("[data-letter]").forEach(button => {
+    button.addEventListener("click", () => {
+      appState.selectedLetter = button.dataset.letter || null;
       renderGlossary();
     });
   });
@@ -293,45 +362,61 @@ function renderGlossary() {
   bindTermButtons();
 }
 
+// Привязка событий к кнопкам терминов
 function bindTermButtons() {
-  document.querySelectorAll("[data-term-index]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const termObj = findTermByIndex(btn.dataset.termIndex);
-      if (termObj) openTermModal(termObj.term, termObj.desc);
+  document.querySelectorAll("[data-term-index]").forEach(button => {
+    button.addEventListener("click", () => {
+      const term = findTermByIndex(button.dataset.termIndex);
+      if (term) openTermModal(term.term, term.desc);
     });
   });
 }
 
+// Отрисовка списка терминов
 function renderTermButtons(terms) {
-  if (!terms.length) return '<div class="empty-state">По этому запросу ничего не найдено.</div>';
-  return terms.map(item => `<button class="term-button" data-term-index="${item.index}">${escapeHtml(item.term)}</button>`).join("");
+  if (!terms.length) {
+    return '<div class="empty-state">По этому запросу ничего не найдено.</div>';
+  }
+  return terms.map(item => `
+    <button class="term-button" type="button" data-term-index="${item.index}">
+      ${escapeHtml(item.term)}
+    </button>
+  `).join("");
 }
 
+// Фильтрация терминов по букве и поисковому запросу
 function getFilteredTerms(letterFilter, query) {
-  const norm = query.toLowerCase();
+  const normalizedQuery = query.toLowerCase();
   const entries = [];
   Object.keys(glossaryData).sort((a, b) => a.localeCompare(b, "ru-RU")).forEach(letter => {
     if (letterFilter && letter !== letterFilter) return;
-    let counter = 0;
+    let localCounter = 0;
     (glossaryData[letter] || []).forEach(item => {
-      const t = item.term || "", d = item.desc || "";
-      const matches = !norm || t.toLowerCase().includes(norm) || d.toLowerCase().includes(norm);
-      if (matches) entries.push({ ...item, index: `${letter}::${counter}` });
-      counter++;
+      const term = item.term || "";
+      const desc = item.desc || "";
+      const matches = !normalizedQuery ||
+        term.toLowerCase().includes(normalizedQuery) ||
+        desc.toLowerCase().includes(normalizedQuery);
+      if (matches) {
+        entries.push({ ...item, index: `${letter}::${localCounter}` });
+      }
+      localCounter += 1;
     });
   });
   return entries;
 }
 
+// Поиск термина по индексу (буква + номер)
 function findTermByIndex(index) {
   const parts = String(index).split("::");
   if (parts.length !== 2) return null;
-  const [letter, idxStr] = parts;
-  const idx = parseInt(idxStr, 10);
+  const letter = parts[0];
+  const idx = parseInt(parts[1], 10);
   if (!glossaryData || !glossaryData[letter] || isNaN(idx)) return null;
   return (glossaryData[letter] || [])[idx] || null;
 }
 
+// Открытие модального окна термина
 function openTermModal(title, desc) {
   termModalTitle.textContent = title || "";
   termModalBody.textContent = desc || "";
@@ -339,27 +424,40 @@ function openTermModal(title, desc) {
   termModal.setAttribute("aria-hidden", "false");
 }
 
+// Закрытие модального окна термина
 function closeTermModal() {
   termModal.classList.add("hidden");
   termModal.setAttribute("aria-hidden", "true");
 }
 
+// Фильтр героев по статусу
 function getHeroesByStatus(status) {
-  return heroesData.filter(h => (h.status || "alive") === status).slice().sort((a, b) => (a.name || "").localeCompare(b.name || "", "ru-RU"));
+  return heroesData
+    .filter(hero => (hero.status || "alive") === status)
+    .slice()
+    .sort((a, b) => (a.name || "").localeCompare(b.name || "", "ru-RU"));
 }
 
+// Построение абсолютного URL портрета
 function getPortraitUrl(path) {
   if (!path) return "";
   return /^(https?:|data:)/.test(path) ? path : `${ASSETS_BASE_URL}${path}`;
 }
 
+// Определение размера шрифта имени героя по длине строки
 function getTitleSizeClass(name) {
-  const len = String(name || "").length;
-  if (len >= 15) return "title-long";
-  if (len >= 10) return "title-medium";
+  const length = String(name || "").length;
+  if (length >= 15) return "title-long";
+  if (length >= 10) return "title-medium";
   return "title-short";
 }
 
+// Экранирование HTML-строк
 function escapeHtml(value) {
-  return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
