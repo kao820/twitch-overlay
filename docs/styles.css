@@ -522,6 +522,22 @@ body.light-theme .hero-card {
   text-align: center;
 }
 
+/* Light theme overrides for hero badge */
+body.light-theme .hero-badge {
+  /* Use panel color as base and soften the gradient for light backgrounds */
+  background:
+    linear-gradient(180deg, rgba(157, 93, 72, 0.10), rgba(255, 255, 255, 0.02)),
+    var(--panel-color);
+}
+
+body.light-theme .hero-badge-label {
+  color: var(--muted);
+}
+
+body.light-theme .hero-badge-value {
+  color: var(--gold);
+}
+
 .hero-badge-label {
   display: block;
   margin-bottom: 5px;
@@ -564,7 +580,8 @@ body.light-theme .hero-card {
 }
 
 .hero-meta-value {
-  color: var(--text);
+  /* Use gold for meta values to match the hero name */
+  color: var(--gold);
   font-size: clamp(1.1rem, 2vw, 1.7rem);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -825,8 +842,9 @@ body.light-theme .hero-card {
   }
 
   .hero-stats-grid {
-    grid-template-columns: 1fr;
-    gap: 0 16px;
+    /* Display stats in two columns on small screens */
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 16px;
   }
 
   .modal-card {
