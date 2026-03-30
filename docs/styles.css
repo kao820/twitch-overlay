@@ -1,19 +1,23 @@
-/* Override styles for LRS Overlay for new version.
+/*
+ * Переопределение стилей для LRS Overlay.
  *
- * We import the upstream stylesheet from the kao820/twitch-overlay repository to retain
- * the existing look and feel. By importing the base CSS, we avoid duplicating
- * thousands of lines of code while still allowing us to modify specific
- * components. The overrides below fix issues discovered in the previous design
- * iterations: theme toggling now recolors the hero card and portrait frame,
- * and the hero badges no longer wrap on small screens (horizontal scroll is
- * enabled).
+ * Чтобы сохранить оригинальный дизайн из стартового набора, разместите
+ * исходный файл `styles.css` из предыдущей рабочей версии выше этого блока.
+ * Данный файл содержит лишь корректировки, решающие проблемы с темой и
+ * отображением характеристик на мобильных устройствах. Если вы не
+ * подключаете исходный styles.css вручную, внешний вид может отличаться
+ * от оригинального.
  */
 
-@import url("https://kao820.github.io/twitch-overlay/docs/styles.css");
+/* Значение масштаба шрифта для модальных окон; управляется через JS */
+:root {
+  --term-font-scale: 1;
+}
 
-/* Ensure the hero card background uses the theme's card color variable
-   instead of a fixed dark color. Without this override, the card remains
-   dark in light mode. */
+/*
+ * Перекрашивание карточки героя в соответствии с выбранной темой.
+ * Заменяет жёстко заданный тёмный фон на переменные `--card-color`.
+ */
 .hero-card {
   background:
     radial-gradient(circle at top left, rgba(177, 73, 50, 0.18), transparent 24%),
@@ -22,17 +26,19 @@
     var(--card-color);
 }
 
-/* Use the panel color variable for the portrait frame, so it adapts to the
-   selected theme. */
+/*
+ * Рамка портрета теперь использует `--panel-color`, чтобы соответствовать теме.
+ */
 .hero-portrait-frame {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent),
     var(--panel-color);
 }
 
-/* Prevent hero badges from wrapping to a new line. This keeps the badges
-   aligned horizontally on mobile devices. If the number of badges exceeds
-   available width, users can scroll horizontally. */
+/*
+ * Значки характеристик героя должны оставаться на одной строке даже на мобильных.
+ * При необходимости появляется горизонтальная прокрутка.
+ */
 .hero-badges {
   flex-wrap: nowrap;
   overflow-x: auto;
