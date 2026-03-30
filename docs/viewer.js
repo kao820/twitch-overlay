@@ -42,6 +42,7 @@ const ASSETS_BASE_URL = isProd
   ? "https://kao820.github.io/twitch-overlay/"
   : "";
 
+// Основной запуск
 init();
 
 async function init() {
@@ -51,6 +52,7 @@ async function init() {
   render();
 }
 
+// Привязка событий для кнопок и модалок
 function bindStaticEvents() {
   backButton.addEventListener("click", goBack);
 
@@ -81,6 +83,7 @@ function bindStaticEvents() {
   });
 }
 
+// Загрузка данных JSON
 async function loadData() {
   const [heroes, glossary, settings] = await Promise.all([
     loadJSON("heroes.json", []),
@@ -100,17 +103,19 @@ async function loadJSON(path, fallback) {
     const response = await fetch(`${DATA_BASE_URL}${path}`, { cache: "no-store" });
     if (!response.ok) return fallback;
     return await response.json();
-  } catch (error) {
+  } catch {
     return fallback;
   }
 }
 
+// Применяем цвета из settings.json
 function applySettings() {
   const root = document.documentElement.style;
   if (settingsData?.textColor) root.setProperty("--text", settingsData.textColor);
   if (settingsData?.panelBg) root.setProperty("--panel-color", settingsData.panelBg);
 }
 
+// Переключение темы (светлая/тёмная)
 function applyTheme() {
   const saved = localStorage.getItem("viewerTheme") || "dark";
   document.body.classList.toggle("light-theme", saved === "light");
@@ -118,6 +123,7 @@ function applyTheme() {
   document.documentElement.style.setProperty("--term-font-scale", appState.glossaryScale);
 }
 
+// Навигация: записываем историю и переключаем view
 function pushView(nextView, payload = {}) {
   appState.history.push({
     view: appState.view,
@@ -134,6 +140,7 @@ function pushView(nextView, payload = {}) {
   render();
 }
 
+// Назад: восстанавливаем прошлое состояние
 function goBack() {
   if (!appState.history.length) return;
   closeTermModal();
@@ -145,6 +152,7 @@ function goBack() {
   render();
 }
 
+// Главный рендерер
 function render() {
   backButton.classList.toggle("hidden", appState.view === "home");
   if (appState.view === "home") { renderHome(); return; }
@@ -154,6 +162,7 @@ function render() {
   if (appState.view === "glossary") { renderGlossary(); return; }
 }
 
+// Домашний экран
 function renderHome() {
   appView.innerHTML = `
     <section class="screen home-screen">
@@ -178,6 +187,7 @@ function renderHome() {
   });
 }
 
+// Экран со статусами героев
 function renderHeroesStatus() {
   const statusSections = [
     { key: "alive", title: STATUS_LABELS.alive, desc: "Персонажи, чья история ещё продолжается" },
@@ -218,6 +228,7 @@ function renderHeroesStatus() {
   });
 }
 
+// Экран списка героев (по статусу)
 function renderHeroesList() {
   const status = appState.selectedStatus || "alive";
   const heroes = getHeroesByStatus(status);
@@ -246,12 +257,13 @@ function renderHeroesList() {
   });
 }
 
+// Карточка героя
 function renderHeroCard() {
   const hero = appState.selectedHero;
   if (!hero) { goBack(); return; }
   const portraitUrl = getPortraitUrl(hero.portrait);
   const titleClass = getTitleSizeClass(hero.name || "");
-  // Без inline onerror
+  // Изображение без inline onerror, обработчик ошибки — ниже
   const portraitMarkup = portraitUrl
     ? `<img class="hero-portrait" src="${portraitUrl}" alt="${escapeHtml(hero.name || "")}">`
     : `<div class="hero-portrait-fallback">Портрет недоступен</div>`;
@@ -290,7 +302,7 @@ function renderHeroCard() {
       </article>
     </section>
   `;
-  // Добавляем обработчик ошибки для портрета через JS.
+  // Обработчик ошибки для портрета
   const portraitEl = appView.querySelector('.hero-card-screen .hero-portrait');
   if (portraitEl) {
     portraitEl.addEventListener('error', () => {
@@ -302,6 +314,7 @@ function renderHeroCard() {
   }
 }
 
+// Отдельная функция для бейджей
 function renderBadge(label, value) {
   return `
     <div class="hero-badge">
@@ -311,6 +324,7 @@ function renderBadge(label, value) {
   `;
 }
 
+// Отдельная функция для строчек статов
 function renderStatLine(label, value) {
   return `
     <div class="hero-stat-line">
@@ -320,6 +334,7 @@ function renderStatLine(label, value) {
   `;
 }
 
+// Экран словаря
 function renderGlossary() {
   const letters = Object.keys(glossaryData).sort((a, b) => a.localeCompare(b, "ru-RU"));
   const selectedLetter = appState.selectedLetter && letters.includes(appState.selectedLetter)
@@ -359,6 +374,7 @@ function renderGlossary() {
   bindTermButtons();
 }
 
+// Привязка кликов к кнопкам терминов
 function bindTermButtons() {
   document.querySelectorAll("[data-term-index]").forEach(button => {
     button.addEventListener("click", () => {
@@ -368,6 +384,7 @@ function bindTermButtons() {
   });
 }
 
+// Рендер кнопок терминов
 function renderTermButtons(terms) {
   if (!terms.length) {
     return '<div class="empty-state">По этому запросу ничего не найдено.</div>';
@@ -379,6 +396,7 @@ function renderTermButtons(terms) {
   `).join("");
 }
 
+// Фильтрация терминов по букве и поисковому запросу
 function getFilteredTerms(letterFilter, query) {
   const normalizedQuery = query.toLowerCase();
   const entries = [];
@@ -403,6 +421,7 @@ function getFilteredTerms(letterFilter, query) {
   return entries;
 }
 
+// Поиск терминов по индексу буквы и порядковому номеру
 function findTermByIndex(index) {
   const parts = String(index).split("::");
   if (parts.length !== 2) return null;
@@ -412,6 +431,7 @@ function findTermByIndex(index) {
   return (glossaryData[letter] || [])[localIndex] || null;
 }
 
+// Открытие модального окна термина
 function openTermModal(title, desc) {
   termModalTitle.textContent = title || "";
   termModalBody.textContent = desc || "";
@@ -419,11 +439,13 @@ function openTermModal(title, desc) {
   termModal.setAttribute("aria-hidden", "false");
 }
 
+// Закрытие модального окна
 function closeTermModal() {
   termModal.classList.add("hidden");
   termModal.setAttribute("aria-hidden", "true");
 }
 
+// Фильтрация героев по статусу
 function getHeroesByStatus(status) {
   return heroesData
     .filter(hero => (hero.status || "alive") === status)
@@ -431,11 +453,13 @@ function getHeroesByStatus(status) {
     .sort((a, b) => (a.name || "").localeCompare(b.name || "", "ru-RU"));
 }
 
+// Сборка URL портрета
 function getPortraitUrl(path) {
   if (!path) return "";
   return /^(https?:|data:)/.test(path) ? path : `${ASSETS_BASE_URL}${path}`;
 }
 
+// Выбор размера заголовка карточки в зависимости от длины имени
 function getTitleSizeClass(name) {
   const length = String(name || "").length;
   if (length >= 15) return "title-long";
@@ -443,6 +467,7 @@ function getTitleSizeClass(name) {
   return "title-short";
 }
 
+// Экранирование HTML
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
