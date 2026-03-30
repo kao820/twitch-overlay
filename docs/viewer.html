@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LRS Overlay</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <button id="backButton" class="icon-button hidden" type="button" aria-label="Назад">↩</button>
+      <div class="header-spacer"></div>
+      <button id="themeToggle" class="icon-button" type="button" title="Переключить тему">🌙</button>
+    </header>
+
+    <main id="appView" class="app-view" aria-live="polite"></main>
+  </div>
+
+  <div id="termModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" id="termModalBackdrop"></div>
+    <section class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h2 id="termModalTitle" class="modal-title"></h2>
+        </div>
+        <div class="modal-actions">
+          <span class="font-tools-label">Аа</span>
+          <button id="fontDown" class="tool-button" type="button" aria-label="Уменьшить текст">↓</button>
+          <button id="fontUp" class="tool-button" type="button" aria-label="Увеличить текст">↑</button>
+          <button id="termModalClose" class="tool-button close-tool" type="button" aria-label="Закрыть">✕</button>
+        </div>
+      </div>
+      <div id="termModalBody" class="modal-body"></div>
+    </section>
+  </div>
+
+  <footer class="privacy-link">
+    <a href="https://kao820.github.io/twitch-overlay/privacy-policy.html" target="_blank" rel="noreferrer">Политика конфиденциальности</a>
+  </footer>
+
+  <!-- Include Twitch extension helper -->
+  <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
+  <!-- Load scripts.js for backward compatibility -->
+  <script src="scripts.js"></script>
+</body>
+</html>
