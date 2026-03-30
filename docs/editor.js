@@ -118,8 +118,6 @@ function toggleTheme() {
 // --- Отрисовка ---
 function renderHeroesList() {
   heroesListEl.innerHTML = '';
-  // Создаём массив, включающий исходный индекс героя, чтобы при сортировке
-  // не терять привязку к данным. Иначе кнопка открывает неправильного героя.
   heroes
     .map((hero, idx) => ({ hero, idx }))
     .sort((a, b) => (a.hero.name || '').localeCompare(b.hero.name || '', 'ru-RU'))
@@ -134,10 +132,8 @@ function renderHeroesList() {
 
 function renderGlossaryLetters() {
   glossaryLettersEl.innerHTML = '';
-  // Собираем уникальные буквы из данных
   const letters = Object.keys(glossary)
     .sort((a, b) => a.localeCompare(b, 'ru-RU'));
-  // Добавляем кнопку «Все», чтобы отобразить все термины
   const allBtn = document.createElement('button');
   allBtn.textContent = 'Все';
   allBtn.dataset.letter = '';
@@ -154,7 +150,6 @@ function renderGlossaryLetters() {
 
 function renderGlossaryList() {
   glossaryListEl.innerHTML = '';
-  // Собираем список терминов для выбранной буквы или для всех
   let entries = [];
   const letters = Object.keys(glossary).sort((a, b) => a.localeCompare(b, 'ru-RU'));
   letters.forEach((letter) => {
@@ -164,7 +159,6 @@ function renderGlossaryList() {
       entries.push({ letter, index: idx, term: item.term || '' });
     });
   });
-  // Сортируем по алфавиту термины, если показаны все
   if (!currentGlossaryLetter) {
     entries.sort((a, b) => a.term.localeCompare(b.term, 'ru-RU'));
   }
@@ -180,14 +174,11 @@ function renderGlossaryList() {
 
 // --- Обработчики ---
 function bindEvents() {
-  // Переключение темы
   themeToggleBtn.addEventListener('click', toggleTheme);
 
-  // Вкладки
   tabs.forEach((tab) => {
     tab.addEventListener('click', () => {
       const target = tab.dataset.tab;
-      // Активируем выбранную вкладку
       tabs.forEach((t) => t.classList.toggle('active', t === tab));
       Object.keys(tabContents).forEach((k) => {
         tabContents[k].classList.toggle('hidden', k !== target);
@@ -195,7 +186,6 @@ function bindEvents() {
     });
   });
 
-  // Список героев — делегируем обработчик
   heroesListEl.addEventListener('click', (e) => {
     const btn = e.target.closest('button.hero-btn');
     if (!btn) return;
@@ -205,22 +195,18 @@ function bindEvents() {
     }
   });
 
-  // Добавление нового героя
   addHeroBtn.addEventListener('click', () => {
     openHeroForm(null);
   });
 
-  // Загрузка heroes.json
   downloadHeroesBtn.addEventListener('click', () => {
     downloadJSON('heroes.json', heroes);
   });
 
-  // Закрытие формы героя
   closeHeroFormBtn.addEventListener('click', () => {
     closeHeroForm();
   });
 
-  // Клик по статусам в форме героя
   statusButtons.forEach((btn) => {
     btn.addEventListener('click', () => {
       statusButtons.forEach((b) => b.classList.remove('active'));
@@ -229,28 +215,23 @@ function bindEvents() {
     });
   });
 
-  // Применить изменения героя
   applyHeroBtn.addEventListener('click', () => {
     saveHero();
   });
 
-  // Glossary letter buttons
   glossaryLettersEl.addEventListener('click', (e) => {
     const btn = e.target.closest('button');
     if (!btn) return;
     const letter = btn.dataset.letter;
     currentGlossaryLetter = letter;
     currentGlossaryIndex = null;
-    // Reset selection states
     renderGlossaryLetters();
     renderGlossaryList();
-    // Clear form fields
     glossTermInput.value = '';
     glossDescInput.value = '';
     updateGlossaryActionButtons();
   });
 
-  // Glossary term selection
   glossaryListEl.addEventListener('click', (e) => {
     const btn = e.target.closest('button.glossary-term-btn');
     if (!btn) return;
@@ -259,20 +240,25 @@ function bindEvents() {
     openGlossaryTerm(letter, index);
   });
 
-  // Добавить термин
+  // Добавить/сохранить термин
   addTermBtn.addEventListener('click', () => {
-    currentGlossaryIndex = null;
-    glossTermInput.value = '';
-    glossDescInput.value = '';
-    updateGlossaryActionButtons();
+    const termFilled = glossTermInput.value && glossTermInput.value.trim();
+    if (termFilled) {
+      saveGlossaryTerm();
+    } else {
+      currentGlossaryIndex = null;
+      glossTermInput.value = '';
+      glossDescInput.value = '';
+      updateGlossaryActionButtons();
+    }
   });
 
-  // Сохранить термин
+  // Сохранить существующий термин
   saveTermBtn.addEventListener('click', () => {
     saveGlossaryTerm();
   });
 
-  // Отмена редактирования термина
+  // Отмена редактирования
   cancelTermBtn.addEventListener('click', () => {
     currentGlossaryIndex = null;
     glossTermInput.value = '';
@@ -280,7 +266,6 @@ function bindEvents() {
     updateGlossaryActionButtons();
   });
 
-  // Скачать словарь
   downloadGlossaryBtn.addEventListener('click', () => {
     downloadJSON('glossary.json', glossary);
   });
@@ -289,7 +274,6 @@ function bindEvents() {
 // --- Герои: открытие формы ---
 function openHeroForm(index) {
   currentHeroIndex = index;
-  // Устанавливаем значения
   const isNew = index === null || index === undefined;
   heroFormTitleEl.textContent = isNew ? 'Новый герой' : 'Редактировать героя';
   if (isNew) {
@@ -318,7 +302,6 @@ function openHeroForm(index) {
     });
     currentHeroStatus = h.status || 'alive';
   }
-  // Обновляем статус кнопок
   statusButtons.forEach((btn) => {
     btn.classList.toggle('active', btn.dataset.status === currentHeroStatus);
   });
@@ -367,7 +350,6 @@ function saveHero() {
 function openGlossaryTerm(letter, index) {
   currentGlossaryLetter = letter;
   currentGlossaryIndex = index;
-  // Обновляем выбранные буквы
   renderGlossaryLetters();
   renderGlossaryList();
   const entry = (glossary[letter] || [])[index];
@@ -391,19 +373,14 @@ function saveGlossaryTerm() {
     alert('Термин не может быть пустым');
     return;
   }
-  // Если раздела для буквы нет, создаём
   if (!glossary[letter]) glossary[letter] = [];
   if (currentGlossaryIndex === null || currentGlossaryIndex === undefined) {
-    // Добавляем новый
     glossary[letter].push({ term, desc });
   } else {
     glossary[letter][currentGlossaryIndex] = { term, desc };
   }
-  // Сортируем термины внутри буквы по алфавиту
   glossary[letter].sort((a, b) => (a.term || '').localeCompare(b.term || '', 'ru-RU'));
-  // Обновляем список
   renderGlossaryList();
-  // Сбрасываем форму
   currentGlossaryIndex = null;
   glossTermInput.value = '';
   glossDescInput.value = '';
@@ -412,12 +389,6 @@ function saveGlossaryTerm() {
 
 // --- Glossary: обновление состояния кнопок ---
 function updateGlossaryActionButtons() {
-  /*
-   * Если текущий термин не выбран (currentGlossaryIndex == null),
-   * показываем кнопку «Добавить термин» и скрываем кнопки «Сохранить»
-   * и «Отмена». Когда выбран термин, скрываем кнопку добавления и
-   * показываем кнопки для сохранения и отмены редактирования.
-   */
   const hasSelection = currentGlossaryIndex !== null && currentGlossaryIndex !== undefined;
   if (addTermBtn) addTermBtn.classList.toggle('hidden', hasSelection);
   if (saveTermBtn) saveTermBtn.classList.toggle('hidden', !hasSelection);
