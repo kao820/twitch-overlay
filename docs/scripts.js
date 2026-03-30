@@ -1,7 +1,7 @@
-// Wrapper script to maintain backward compatibility for Twitch overlay.
-// This file contains the same logic as viewer.js.
-// Twitch’s old manifest points to `viewer.html` and `scripts.js`; by keeping this file up-to-date,
-// your overlay will continue to auto‑update from GitHub without publishing a new extension version.
+// LRS Overlay — общая логика для показа героев и словаря.
+// Этот файл совместим с Content Security Policy Twitch: никаких inline onerror и других
+// встроенных обработчиков, только event listeners. Если старый манифест ищет scripts.js,
+// просто скопируйте этот файл под тем именем, чтобы расширение подтягивало обновления.
 
 const appView = document.getElementById("appView");
 const backButton = document.getElementById("backButton");
@@ -137,7 +137,6 @@ function pushView(nextView, payload = {}) {
 function goBack() {
   if (!appState.history.length) return;
   closeTermModal();
-
   const prev = appState.history.pop();
   appState.view = prev.view;
   appState.selectedStatus = prev.selectedStatus;
@@ -148,27 +147,11 @@ function goBack() {
 
 function render() {
   backButton.classList.toggle("hidden", appState.view === "home");
-
-  if (appState.view === "home") {
-    renderHome();
-    return;
-  }
-  if (appState.view === "heroes-status") {
-    renderHeroesStatus();
-    return;
-  }
-  if (appState.view === "heroes-list") {
-    renderHeroesList();
-    return;
-  }
-  if (appState.view === "hero-card") {
-    renderHeroCard();
-    return;
-  }
-  if (appState.view === "glossary") {
-    renderGlossary();
-    return;
-  }
+  if (appState.view === "home") { renderHome(); return; }
+  if (appState.view === "heroes-status") { renderHeroesStatus(); return; }
+  if (appState.view === "heroes-list") { renderHeroesList(); return; }
+  if (appState.view === "hero-card") { renderHeroCard(); return; }
+  if (appState.view === "glossary") { renderGlossary(); return; }
 }
 
 function renderHome() {
@@ -187,11 +170,9 @@ function renderHome() {
       </div>
     </section>
   `;
-
   document.getElementById("openHeroes").addEventListener("click", () => {
     pushView("heroes-status", { selectedStatus: null, selectedHero: null });
   });
-
   document.getElementById("openGlossary").addEventListener("click", () => {
     pushView("glossary", { selectedLetter: null, selectedHero: null, selectedStatus: null });
   });
@@ -208,7 +189,8 @@ function renderHeroesStatus() {
     const heroes = getHeroesByStatus(key);
     const listHtml = heroes.length
       ? heroes.map(hero => `
-          <button class="hero-list-button" type="button" data-hero-name="${escapeHtml(hero.name)}" data-status="${key}">
+          <button class="hero-list-button" type="button"
+                  data-hero-name="${escapeHtml(hero.name)}" data-status="${key}">
             ${escapeHtml(hero.name)}
           </button>
         `).join("")
@@ -243,7 +225,6 @@ function renderHeroesStatus() {
 function renderHeroesList() {
   const status = appState.selectedStatus || "alive";
   const heroes = getHeroesByStatus(status);
-
   appView.innerHTML = `
     <section class="screen hero-list-screen">
       <h1 class="screen-title">${STATUS_LABELS[status]}</h1>
@@ -261,7 +242,6 @@ function renderHeroesList() {
       </div>
     </section>
   `;
-
   document.querySelectorAll("[data-hero-name]").forEach(button => {
     button.addEventListener("click", () => {
       const hero = heroes.find(item => item.name === button.dataset.heroName);
@@ -273,13 +253,12 @@ function renderHeroesList() {
 function renderHeroCard() {
   const hero = appState.selectedHero;
   if (!hero) { goBack(); return; }
-
   const portraitUrl = getPortraitUrl(hero.portrait);
   const titleClass = getTitleSizeClass(hero.name || "");
+  // Содержимое портрета: без inline onerror, обработчик добавим позже.
   const portraitMarkup = portraitUrl
-    ? `<img class="hero-portrait" src="${portraitUrl}" alt="${escapeHtml(hero.name || "")}" onerror="this.closest('.hero-portrait-frame').innerHTML='<div class=&quot;hero-portrait-fallback&quot;>Портрет недоступен</div>';">`
+    ? `<img class="hero-portrait" src="${portraitUrl}" alt="${escapeHtml(hero.name || "")}">`
     : `<div class="hero-portrait-fallback">Портрет недоступен</div>`;
-
   appView.innerHTML = `
     <section class="screen hero-card-screen">
       <article class="hero-card">
@@ -315,6 +294,16 @@ function renderHeroCard() {
       </article>
     </section>
   `;
+  // Назначаем обработчик ошибки для портрета после вставки в DOM.
+  const portraitEl = appView.querySelector('.hero-card-screen .hero-portrait');
+  if (portraitEl) {
+    portraitEl.addEventListener('error', () => {
+      const frame = portraitEl.closest('.hero-portrait-frame');
+      if (frame) {
+        frame.innerHTML = '<div class="hero-portrait-fallback">Портрет недоступен</div>';
+      }
+    }, { once: true });
+  }
 }
 
 function renderBadge(label, value) {
@@ -340,9 +329,7 @@ function renderGlossary() {
   const selectedLetter = appState.selectedLetter && letters.includes(appState.selectedLetter)
     ? appState.selectedLetter
     : null;
-
   const terms = getFilteredTerms(selectedLetter, "");
-
   appView.innerHTML = `
     <section class="screen">
       <h1 class="screen-title">Словарь</h1>
@@ -360,23 +347,19 @@ function renderGlossary() {
       <div id="glossaryTerms" class="terms-list">${renderTermButtons(terms)}</div>
     </section>
   `;
-
   const searchInput = document.getElementById("searchInput");
   const glossaryTerms = document.getElementById("glossaryTerms");
-
   document.querySelectorAll("[data-letter]").forEach(button => {
     button.addEventListener("click", () => {
       appState.selectedLetter = button.dataset.letter || null;
       renderGlossary();
     });
   });
-
   searchInput.addEventListener("input", () => {
     const list = getFilteredTerms(appState.selectedLetter, searchInput.value.trim());
     glossaryTerms.innerHTML = renderTermButtons(list);
     bindTermButtons();
   });
-
   bindTermButtons();
 }
 
@@ -403,7 +386,6 @@ function renderTermButtons(terms) {
 function getFilteredTerms(letterFilter, query) {
   const normalizedQuery = query.toLowerCase();
   const entries = [];
-
   Object.keys(glossaryData)
     .sort((a, b) => a.localeCompare(b, "ru-RU"))
     .forEach(letter => {
@@ -431,7 +413,7 @@ function findTermByIndex(index) {
   const [letter, idxStr] = parts;
   const localIndex = parseInt(idxStr, 10);
   if (!glossaryData || !glossaryData[letter] || isNaN(localIndex)) return null;
-  return glossaryData[letter][localIndex] || null;
+  return (glossaryData[letter] || [])[localIndex] || null;
 }
 
 function openTermModal(title, desc) {
