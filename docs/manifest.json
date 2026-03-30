@@ -1,11 +1,11 @@
 {
   "manifest_version": 2,
-  "version": "0.0.2",
+  "version": "0.0.3",
   "type": "overlay",
-  "name": "Overlay for LRS games",
-  "description": "Дополнительное меню с основной информацией о героях и глоссарием",
-  "author_name": "Алёна К.",
-  "author_url": "https://github.com/kao820",
+  "name": "LRS Overlay",
+  "description": "Дополнительное меню для зрителей: герои и словарь для 'Земли былых легенд: Молчание богов'",
+  "author_name": "kao820",
+  "author_url": "https://github.com/kao820/twitch-overlay",
   "views": {
     "overlay": {
       "html": "index.html",
