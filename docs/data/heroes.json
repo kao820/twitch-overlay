@@ -3,7 +3,7 @@
     "name": "Торстейн",
     "status": "alive",
     "race": "Тангат",
-    "class": "Воин",
+    "class": "Воин | Шаман",
     "archetype": "Чемпион",
     "portrait": "assets/Торстейн.png",
     "urv": 11,
