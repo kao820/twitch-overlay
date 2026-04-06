@@ -165,9 +165,9 @@ function renderHome() {
 
 function renderHeroesStatus() {
   const statusSections = [
-    { key: "alive", title: STATUS_LABELS.alive, desc: "История ещё продолжается" },
-    { key: "dead", title: STATUS_LABELS.dead, desc: "История уже завершилась" },
-    { key: "unknown", title: STATUS_LABELS.unknown, desc: "Судьба пока остаётся тайной" },
+    { key: "alive", title: STATUS_LABELS.alive, desc: "Персонажи, чья история ещё продолжается" },
+    { key: "dead", title: STATUS_LABELS.dead, desc: "Павшие герои, чья история уже завершилась" },
+    { key: "unknown", title: STATUS_LABELS.unknown, desc: "Те, чья судьба пока остаётся тайной" },
   ];
   const sectionsMarkup = statusSections.map(({ key, title, desc }) => {
     const heroes = getHeroesByStatus(key);
